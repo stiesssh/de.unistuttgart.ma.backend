@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<saga:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI" xmlns:saga="http://www.example.org/saga" id="60fa9cadc736ff6357a89a9b">
+  <sagas id="someSaga">
+    <steps id="paymentStep" task="Task_3" componentInterface="//@architecture/@components.6/@interfaces.0"/>
+    <steps id="orderStep" task="Task_3" nextStep="inventoryStep" componentInterface="//@architecture/@components.5/@interfaces.0"/>
+    <steps id="inventoryStep" task="Task_5" nextStep="paymentStep" componentInterface="//@architecture/@components.3/@interfaces.1"/>
+  </sagas>
+  <processes id="Process_1" name="OrderTeaProcess">
+    <flowElements xsi:type="bpmn2:StartEvent" id="StartEvent_1" name="Start Event 1" outgoing="SequenceFlow_1"/>
+    <flowElements xsi:type="bpmn2:EndEvent" id="EndEvent_1" name="End Event 1" incoming="SequenceFlow_6"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_1" name="addItems" incoming="SequenceFlow_1" outgoing="SequenceFlow_2"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_2" name="confirmOrder" incoming="SequenceFlow_2" outgoing="SequenceFlow_3"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_3" name="createOrder" incoming="SequenceFlow_3" outgoing="SequenceFlow_4"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_4" name="doPayment" incoming="SequenceFlow_4" outgoing="SequenceFlow_5"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_5" name="updateInventory" incoming="SequenceFlow_5" outgoing="SequenceFlow_6"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_2" sourceRef="Task_1" targetRef="Task_2"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_3" sourceRef="Task_2" targetRef="Task_3"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_4" sourceRef="Task_3" targetRef="Task_4"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_5" sourceRef="Task_4" targetRef="Task_5"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_6" sourceRef="Task_5" targetRef="EndEvent_1"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_6" name="rejectOrder" incoming="SequenceFlow_7" isForCompensation="true"/>
+    <flowElements xsi:type="bpmn2:BoundaryEvent" id="BoundaryEvent_1" name="" outgoing="SequenceFlow_7" attachedToRef="Task_3">
+      <eventDefinitions xsi:type="bpmn2:CompensateEventDefinition" id="CompensateEventDefinition_1"/>
+    </flowElements>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_7" sourceRef="BoundaryEvent_1" targetRef="Task_6"/>
+    <flowElements xsi:type="bpmn2:BoundaryEvent" id="BoundaryEvent_2" name="" outgoing="SequenceFlow_11" attachedToRef="Task_4">
+      <eventDefinitions xsi:type="bpmn2:ErrorEventDefinition" id="ErrorEventDefinition_1"/>
+    </flowElements>
+    <flowElements xsi:type="bpmn2:IntermediateThrowEvent" id="IntermediateThrowEvent_1" name="Intermediate Throw Event 1" incoming="SequenceFlow_11" outgoing="SequenceFlow_12">
+      <eventDefinitions xsi:type="bpmn2:CompensateEventDefinition" id="CompensateEventDefinition_2"/>
+    </flowElements>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_11" sourceRef="BoundaryEvent_2" targetRef="IntermediateThrowEvent_1"/>
+    <flowElements xsi:type="bpmn2:Task" id="Task_7" name="resetInventory" incoming="SequenceFlow_12" outgoing="SequenceFlow_16"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_12" sourceRef="IntermediateThrowEvent_1" targetRef="Task_7"/>
+    <flowElements xsi:type="bpmn2:EndEvent" id="EndEvent_2" name="End Event 2" incoming="SequenceFlow_16"/>
+    <flowElements xsi:type="bpmn2:SequenceFlow" id="SequenceFlow_16" sourceRef="Task_7" targetRef="EndEvent_2"/>
+  </processes>
+  <architecture id="5e8cc17ed645a00c">
+    <components id="5e8cf6551a05a013" name="cart">
+      <interfaces id="5e8cf71a0285a023" name="getCart" consumedBy="//@architecture/@components.1"/>
+    </components>
+    <components id="5e8cf665a445a015" name="uibackend" consumedInterfaces="//@architecture/@components.0/@interfaces.0 //@architecture/@components.4/@interfaces.0 //@architecture/@components.3/@interfaces.0 //@architecture/@components.9/@interfaces.0">
+      <interfaces id="5e8cf70605c5a022" name="apiGateway" consumedBy="//@architecture/@components.2"/>
+    </components>
+    <components id="5e8cf67ea105a017" name="ui" consumedInterfaces="//@architecture/@components.1/@interfaces.0"/>
+    <components id="5e8cf68f7045a019" name="inventory" consumedInterfaces="//@architecture/@components.8/@interfaces.0">
+      <interfaces id="5e8cf7541485a027" name="getInventory " consumedBy="//@architecture/@components.1"/>
+      <interfaces id="5e8cf74541c5a026" name="inventory interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="5e8cf69a1205a01b" name="orchestrator" consumedInterfaces="//@architecture/@components.5/@interfaces.0 //@architecture/@components.3/@interfaces.1 //@architecture/@components.6/@interfaces.0">
+      <interfaces id="5e8cf72b87c5a024" name="confirmOrder" consumedBy="//@architecture/@components.1"/>
+    </components>
+    <components id="5e8cf6bf0245a01d" name="order">
+      <interfaces id="5e8cf73d3ec5a025" name="order interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="5e8cf6d4fe05a01f" name="payment" consumedInterfaces="//@architecture/@components.7/@interfaces.0">
+      <interfaces id="5e8cf760d345a028" name="payment interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="5e8cf6eaf785a021" name="credit institute">
+      <interfaces id="5e8cf780c585a029" name="credit institute interface" consumedBy="//@architecture/@components.6 //@architecture/@components.9"/>
+    </components>
+    <components id="5e9453065b4a7002" name="anothercomp" consumedInterfaces="//@architecture/@components.9/@interfaces.0">
+      <interfaces id="5e94553f2a4a7006" name="anotherIface" consumedBy="//@architecture/@components.3"/>
+    </components>
+    <components id="5e945333924a7004" name="othercomp" consumedInterfaces="//@architecture/@components.7/@interfaces.0">
+      <interfaces id="5e94539417ca7005" name="otherCompIface" consumedBy="//@architecture/@components.1 //@architecture/@components.8"/>
+    </components>
+  </architecture>
+  <sloRules name="payment_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.6" gropiusComponentInterface="//@architecture/@components.6/@interfaces.0"/>
+  <sloRules name="anotherIface_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.8" gropiusComponentInterface="//@architecture/@components.8/@interfaces.0"/>
+  <sloRules name="CI_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <sloRules name="other_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.9" gropiusComponentInterface="//@architecture/@components.9/@interfaces.0"/>
+  <sloRules name="CI_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <notifications id="5d2b7c62-557a-430f-ae73-5431c1a5beff" topLevelImpacts="7f2b4452-782e-43a5-a800-995b28bd022d">
+    <impacts id="22c7c41d-f3cf-4d11-991e-9df5a01d2d34" rootCause="34e01105-1e63-4eb5-9feb-ca3ccfc39a7e" location="//@architecture/@components.7/@interfaces.0"/>
+    <impacts id="5fa6fa70-408e-482e-ab6d-2b2b017059a3" cause="22c7c41d-f3cf-4d11-991e-9df5a01d2d34" location="paymentStep"/>
+    <impacts id="7f2b4452-782e-43a5-a800-995b28bd022d" cause="5fa6fa70-408e-482e-ab6d-2b2b017059a3" location="Task_4"/>
+    <alert name="34e01105-1e63-4eb5-9feb-ca3ccfc39a7e" sloRule="CI_respT_slo"/>
+  </notifications>
+  <notifications id="52fa776d-e785-4a70-ae19-7bf35f62bfc9" topLevelImpacts="4c5f9e53-f46c-4ebd-8ef7-308a49af90af">
+    <impacts id="c1181618-27a6-4fc4-8a20-fb8b0bfb4636" cause="bpact" location="//@architecture/@components.7/@interfaces.0"/>
+    <impacts id="32fe72b8-44e5-4ac3-99c7-61b244977db6" cause="c1181618-27a6-4fc4-8a20-fb8b0bfb4636" location="paymentStep"/>
+    <impacts id="4c5f9e53-f46c-4ebd-8ef7-308a49af90af" cause="32fe72b8-44e5-4ac3-99c7-61b244977db6" location="Task_4"/>
+    <impacts id="apact" rootCause="5b1c180b-3b5f-458e-a88f-668931ea37b5" location="//@architecture/@components.7/@interfaces.0"/>
+    <impacts id="bpact" cause="apact" location="//@architecture/@components.4/@interfaces.0"/>
+    <alert name="5b1c180b-3b5f-458e-a88f-668931ea37b5" sloRule="CI_respT_slo"/>
+  </notifications>
+</saga:System>
