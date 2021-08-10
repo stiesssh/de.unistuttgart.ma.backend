@@ -28,7 +28,7 @@ import de.unistuttgart.ma.backend.importer.slo.SloFlatRule;
 import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.PresetOptions;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
-public abstract class TestWithRepoAndMockServers extends TestWithRepo {
+public abstract class TestWithMockServer {
 
 	static WireMockServer server;
 	static int port;
@@ -39,11 +39,9 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	String gropius = "/gropiusUrl/api";
 
 	ImportRequest request;
-
-	@Override
+	
 	@BeforeEach
 	public void setUp() {
-		super.setUp();
 		try { // Get a free port
 			ServerSocket s = new ServerSocket(0);
 			port = s.getLocalPort();

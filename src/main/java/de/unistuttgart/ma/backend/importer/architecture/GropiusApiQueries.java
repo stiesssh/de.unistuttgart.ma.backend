@@ -12,6 +12,13 @@ import de.unistuttgart.gropius.api.ComponentPageQuery;
 import de.unistuttgart.gropius.api.ComponentPageQueryDefinition;
 import de.unistuttgart.gropius.api.ComponentQuery;
 import de.unistuttgart.gropius.api.ComponentQueryDefinition;
+import de.unistuttgart.gropius.api.CreateIssueInput;
+import de.unistuttgart.gropius.api.CreateIssuePayloadQuery;
+import de.unistuttgart.gropius.api.CreateIssuePayloadQueryDefinition;
+import de.unistuttgart.gropius.api.IssueQuery;
+import de.unistuttgart.gropius.api.IssueQueryDefinition;
+import de.unistuttgart.gropius.api.MutationQuery;
+import de.unistuttgart.gropius.api.MutationQueryDefinition;
 import de.unistuttgart.gropius.api.Operations;
 import de.unistuttgart.gropius.api.ProjectFilter;
 import de.unistuttgart.gropius.api.ProjectPageQuery;
@@ -25,6 +32,12 @@ import de.unistuttgart.gropius.api.UserQueryDefinition;
 import de.unistuttgart.gropius.api.QueryQuery.ProjectsArguments;
 import de.unistuttgart.gropius.api.QueryQuery.ProjectsArgumentsDefinition;
 
+/**
+ * Provides query queries and mutation queries.
+ * 
+ * @author maumau
+ *
+ */
 public class GropiusApiQueries {
 
 	private static ProjectPageQueryDefinition projectPageQueryDef;
@@ -92,5 +105,29 @@ public class GropiusApiQueries {
 		
 		ProjectsArgumentsDefinition argsDef = (ProjectsArguments args) -> args.filterBy(filter);
 		return argsDef;
+	}
+	
+	/**
+	 * Create a mutation to create a new issue.
+	 * 
+	 * @param componentId
+	 * @param jsonBody
+	 * @param title
+	 * @return the mutationQuery to create an issue.
+	 */
+	public static MutationQuery getCreateIssueMutation(final String componentId, final String jsonBody, final String title) {
+		
+		// creation request
+		CreateIssueInput cii = new CreateIssueInput(title, List.of(new ID(componentId)));
+		cii.setBody(jsonBody);
+		
+		// result
+		IssueQueryDefinition iqd = (IssueQuery iq) -> {iq.title();}; 		
+		CreateIssuePayloadQueryDefinition queryDef = (CreateIssuePayloadQuery cipq) -> {cipq.issue(iqd);};
+		
+		// mutation
+		MutationQueryDefinition mqd = (MutationQuery mq) -> { mq.createIssue(cii, queryDef);}; 
+		
+		return Operations.mutation(mqd);
 	}
 }

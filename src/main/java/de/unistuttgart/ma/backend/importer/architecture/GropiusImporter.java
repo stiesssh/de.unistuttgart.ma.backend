@@ -35,7 +35,7 @@ public class GropiusImporter implements ArchitectureImporter {
 		QueryQuery queryQuery = GropiusApiQueries.getSingleProjectQuery(projectName);
 		System.out.println(queryQuery.toString());
 		try {
-			Query query = manager.query(queryQuery);
+			Query query = manager.queryQuery(queryQuery);
 			return parse(query);
 		} catch (IOException | InterruptedException e) {
 			// TODO do better.

@@ -25,12 +25,11 @@ public class TestSetup {
 	@Autowired
 	ImpactRepositoryProxy impactRepoProxy;
 
-	@PostConstruct
-	public void init() throws IOException {
+	//@PostConstruct
+	public void init(String systemId) throws IOException {
 
-		systemRepoProxy.testInit();
+		//systemRepoProxy.testInit();
 
-		String systemId = "60fa9cadc736ff6357a89a9b";
 		de.unistuttgart.ma.saga.System system = systemRepoProxy.findById(systemId);
 
 		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029");

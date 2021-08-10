@@ -47,18 +47,18 @@ public class SystemRepositoryProxy {
 
 	// TODO DELETE
 	public void testInit() throws IOException {
-		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base.saga"), StandardCharsets.UTF_8);
-		// URI uri = URI.createFileURI("fiii/Myqwer.saga");
-		URI uri = URI.createFileURI("asdfghjkl/My.saga");
-		String filename = uri.path();
-		String id = "60fa9cadc736ff6357a89a9b";
-
-		SystemItem item = new SystemItem(id, xml, filename);
-
-		repository.save(item);
-
-		systemId2ResourceUri.put(item.getId(), item.getFilename());
-		projectId2SystemId.put("5e8cc17ed645a00c", id);
+//		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base.saga"), StandardCharsets.UTF_8);
+//		// URI uri = URI.createFileURI("fiii/Myqwer.saga");
+//		URI uri = URI.createFileURI("test/test.saga");
+//		String filename = uri.path();
+//		String id = "60fa9cadc736ff6357a89a9b";
+//
+//		SystemItem item = new SystemItem(id, xml, filename);
+//
+//		repository.save(item);
+//
+//		systemId2ResourceUri.put(item.getId(), item.getFilename());
+//		projectId2SystemId.put("5e8cc17ed645a00c", id);
 	}
 
 	// systemItemid -> system
