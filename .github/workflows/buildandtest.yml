@@ -18,10 +18,11 @@ jobs:
         path: './backend'
     # collect and install local dependencies
     - name: check out all in one
-      uses: actions/checkout@master
+      uses: actions/checkout@mv2
       with:
         repository: stiesssh/ma-sirius
         path: './sirius'
+        ref: impact
 
 #    - name: check out gropius graphql api
 #      uses: actions/checkout@master
