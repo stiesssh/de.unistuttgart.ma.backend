@@ -17,6 +17,9 @@ import de.unistuttgart.gropius.api.CreateIssuePayloadQuery;
 import de.unistuttgart.gropius.api.CreateIssuePayloadQueryDefinition;
 import de.unistuttgart.gropius.api.IssueQuery;
 import de.unistuttgart.gropius.api.IssueQueryDefinition;
+import de.unistuttgart.gropius.api.LinkIssueInput;
+import de.unistuttgart.gropius.api.LinkIssuePayloadQuery;
+import de.unistuttgart.gropius.api.LinkIssuePayloadQueryDefinition;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.api.MutationQueryDefinition;
 import de.unistuttgart.gropius.api.Operations;
@@ -127,6 +130,20 @@ public class GropiusApiQueries {
 		
 		// mutation
 		MutationQueryDefinition mqd = (MutationQuery mq) -> { mq.createIssue(cii, queryDef);}; 
+		
+		return Operations.mutation(mqd);
+	}
+	
+	public static MutationQuery getLinkIssueMutation(final ID origin, final ID destination) {
+		
+		// creation request
+		LinkIssueInput lii = new LinkIssueInput(origin, destination);
+		
+		// result
+		LinkIssuePayloadQueryDefinition queryDef = (LinkIssuePayloadQuery lipq) -> {lipq.clientMutationId();};
+		
+		// mutation
+		MutationQueryDefinition mqd = (MutationQuery mq) -> { mq.linkIssue(lii, queryDef);}; 
 		
 		return Operations.mutation(mqd);
 	}

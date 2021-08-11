@@ -1,13 +1,22 @@
 package de.unistuttgart.ma.backend;
 
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopify.graphql.support.ID;
+
 import de.unistuttgart.gropius.slo.SloRule;
+import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
+import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.backend.rest.Alert;
 import de.unistuttgart.ma.saga.System;
@@ -39,11 +48,14 @@ public class AlertController {
 	 * 
 	 * 
 	 * @param alert the alert
+	 * @throws IssueCreationFailedException 
+	 * @throws IssueLinkageFailedException 
 	 */
 	@PostMapping("/api/alert")
-	public void receiveAlert(@RequestBody Alert alert) {
+	public void receiveAlert(@RequestBody Alert alert) throws IssueCreationFailedException, IssueLinkageFailedException {
 		String sloId = alert.getSloId();
 		String archId = alert.getGropiusProjectId();
+		ID relatedIssueId = new ID("5ecd5d74e135b005"); // TODO 
 		
 		System system = systemRepoProxy.findByArchitectureId(archId);
 		SloRule rule = system.getSloRules().stream().filter(s -> s.getName().equals(sloId)).findFirst().get();
@@ -55,16 +67,27 @@ public class AlertController {
 		
 		Set<Notification> notes = service.calculateImpacts(v);
 		for (Notification notification : notes) {
-			issueService.createIssue(notification);
+			ID issueId = issueService.createIssue(notification);
+			issueService.linkIssue(issueId, relatedIssueId);
 		}
 	}
 
-
-//	@ExceptionHandler(MissingSystemModelException.class)
-//	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//	public ResponseEntity<String> missingSystemModelException(MissingSystemModelException exception) {
-//		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-//	}
-
+	@ExceptionHandler(NoSuchElementException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ResponseEntity<String> noSuchElementException(NoSuchElementException exception) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+	}
+	
+	@ExceptionHandler(IssueCreationFailedException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ResponseEntity<String> issueCreationFailedException(IssueCreationFailedException exception) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+	}
+	
+	@ExceptionHandler(IssueLinkageFailedException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ResponseEntity<String> issueLinkageFailedException(IssueLinkageFailedException exception) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+	}
 }
 

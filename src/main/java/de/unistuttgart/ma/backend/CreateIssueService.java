@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.shopify.graphql.support.ID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,8 @@ import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.IssueLocation;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.slo.SloRule;
+import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
+import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.exporter.impact.ImpactSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.InterfaceSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.NotificationSerializer;
@@ -49,10 +53,10 @@ public class CreateIssueService {
 	private final GropiusApiQuerier querier;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
- 
+
 	public CreateIssueService(@Value("${gropius.url}") String uri) {
 		module = new SimpleModule();
-		
+
 		module.addSerializer(Notification.class, new NotificationSerializer(Notification.class));
 		module.addSerializer(Impact.class, new ImpactSerializer(Impact.class));
 		module.addSerializer(Violation.class, new ViolationSerializer(Violation.class));
@@ -72,25 +76,26 @@ public class CreateIssueService {
 	 * Create a Gropius issue for given impact.
 	 * 
 	 * @param topLevelImpact impact to create issue for
+	 * @throws IssueCreationFailedException 
 	 */
-	public void createIssue(Notification topLevelImpact) {
+	public ID createIssue(Notification topLevelImpact) throws IssueCreationFailedException {
 
 		String body = createHumanBody(topLevelImpact);
 		String title = createTitle(topLevelImpact);
-		
+
 		// TODO unfake the issue location
 		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation("5ecd41d2e205a003", body, title);
 
 		try {
-			querier.queryMutation(mutation);
+			return querier.queryMutation(mutation).getCreateIssue().getIssue().getId();
 		} catch (IOException | InterruptedException e) {
-			logger.info(
-					String.format("Issue creation for Impact %s failed. %s", topLevelImpact.getId(), e.getMessage()));
+			logger.debug(e.getMessage());
+			throw new IssueCreationFailedException("Failed to create Issue", e);
 		}
 	}
 
 	/**
-	 * Parse impact chain to json. 
+	 * Parse impact chain to json.
 	 * 
 	 * @param topLevelImpact head of the chain
 	 * @return json representation of the impact chain
@@ -99,7 +104,7 @@ public class CreateIssueService {
 	protected String parseToJson(Notification topLevelImpact) throws JsonProcessingException {
 		return mapper.writeValueAsString(topLevelImpact);
 	}
-	
+
 	/**
 	 * 
 	 * @param json representation of impact chain
@@ -107,16 +112,16 @@ public class CreateIssueService {
 	 */
 	protected String createHumanBody(Notification note) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		// for the machine
-		sb.append("[//]: # ("); 
+		sb.append("[//]: # (");
 		try {
 			sb.append(parseToJson(note));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
 		sb.append(")").append("\n");
-		
+
 		// for the human
 		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
 		appendHhumanRootCause(note.getRootCause(), sb);
@@ -126,14 +131,13 @@ public class CreateIssueService {
 			appendHumanPathStep(current, sb);
 			current = current.getCause();
 		}
-				
-		
+
 		return sb.toString();
 	}
 
 	/**
 	 * 
-	 * Create Issue title for given impact. 
+	 * Create Issue title for given impact.
 	 * 
 	 * Title concists of... TODO
 	 * 
@@ -142,11 +146,12 @@ public class CreateIssueService {
 	 */
 	protected String createTitle(Notification topLevelImpact) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Impact on ").append(getLocationName(topLevelImpact.getTopLevelImpact())).append(" caused by Violation of ");
+		sb.append("Impact on ").append(getLocationName(topLevelImpact.getTopLevelImpact()))
+				.append(" caused by Violation of ");
 		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName());
 		return sb.toString();
 	}
-	
+
 	/**
 	 * 
 	 * @param topLevelImpact
@@ -164,14 +169,35 @@ public class CreateIssueService {
 		}
 		throw new IllegalStateException("illegal model");
 	}
-	
+
 	protected void appendHumanLocation(Object obj, StringBuilder sb) {
 		sb.append("* Location : **").append(obj.toString()).append("**").append("\n");
 	}
+
 	protected void appendHhumanRootCause(Violation violation, StringBuilder sb) {
-		sb.append("* Root Cause  : Violation of **").append(violation.getViolatedRule().getName()).append("**").append("\n");
+		sb.append("* Root Cause  : Violation of **").append(violation.getViolatedRule().getName()).append("**")
+				.append("\n");
 	}
+
 	protected void appendHumanPathStep(Impact impact, StringBuilder sb) {
 		sb.append("  * **").append(impact.getLocation().toString()).append("**").append("\n");
+	}
+
+	/**
+	 * 
+	 * @param origin
+	 * @param destination
+	 * @throws IssueLinkageFailedException 
+	 */
+	public void linkIssue(ID origin, ID destination) throws IssueLinkageFailedException {
+		MutationQuery mutation = GropiusApiQueries.getLinkIssueMutation(origin, destination);
+
+		try {
+			querier.queryMutation(mutation);
+		} catch (IOException | InterruptedException e) {
+			logger.info(String.format("Issue linking for"));
+			throw new IssueLinkageFailedException("issue linking failed", e);
+		}
+
 	}
 }

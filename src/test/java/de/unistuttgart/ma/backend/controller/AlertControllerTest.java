@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import de.unistuttgart.ma.backend.AlertController;
 import de.unistuttgart.ma.backend.CreateIssueService;
 import de.unistuttgart.ma.backend.TestWithRepoAndMockServers;
+import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
+import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.rest.Alert;
 
 public class AlertControllerTest extends TestWithRepoAndMockServers{
@@ -31,10 +33,10 @@ public class AlertControllerTest extends TestWithRepoAndMockServers{
 	}
 	
 	@Test 
-	public void test() throws IOException{
+	public void test() throws IOException, IssueCreationFailedException, IssueLinkageFailedException{
 		loadSystem();
 		controller.receiveAlert(alert);
-		verifyGropiusIssue(2);
+		verifyGropiusIssue(4); // 2 creations, 2 linkages
 	}
 	
 
