@@ -72,15 +72,15 @@ public class Controller {
 	 * @throws IOException
 	 * @throws MissingSystemModelException
 	 */
-	@GetMapping("/api/notification/{systemId}")
-	public String getNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
-		return service.retrieveNotification(systemId);
-	}
+//	@GetMapping("/api/notification/{systemId}")
+//	public String getNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
+//		return service.retrieveNotification(systemId);
+//	}
 
-	@GetMapping("/api/fake/{systemId}")
-	public void fakeNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
-		test.init(systemId);
-	}
+//	@GetMapping("/api/fake/{systemId}")
+//	public void fakeNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
+//		test.init(systemId);
+//	}
 
 	
 	@GetMapping("/")

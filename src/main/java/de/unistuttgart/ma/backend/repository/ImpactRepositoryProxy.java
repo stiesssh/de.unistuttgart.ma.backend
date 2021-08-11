@@ -21,9 +21,9 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.unistuttgart.ma.saga.impact.Impact;
-import de.unistuttgart.ma.saga.impact.ImpactFactory;
-import de.unistuttgart.ma.saga.impact.Notification;
+import de.unistuttgart.ma.impact.Impact;
+import de.unistuttgart.ma.impact.ImpactFactory;
+import de.unistuttgart.ma.impact.Notification;
 
 /**
  * Save IMPACTS!!! 
@@ -90,12 +90,12 @@ public class ImpactRepositoryProxy {
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("impact", new EcoreResourceFactoryImpl());
 
 		Notification container = ImpactFactory.eINSTANCE.createNotification();
-		container.getTopLevelImpacts().add(impact);
-		Impact current = impact;
-		while (current != null) {
-			container.getImpacts().add(current);
-			current = current.getCause();
-		}
+		container.setTopLevelImpact(impact);
+//		Impact current = impact;
+//		while (current != null) {
+//			container.getImpacts().add(current);
+//			current = current.getCause();
+//		}
 		
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -126,7 +126,7 @@ public class ImpactRepositoryProxy {
 		
 		for (EObject eObject : resource.getContents()) {
 			if (eObject instanceof Notification) {
-				return ((Notification) eObject).getTopLevelImpacts().get(0);
+				return ((Notification) eObject).getTopLevelImpact();
 			}
 		}
 

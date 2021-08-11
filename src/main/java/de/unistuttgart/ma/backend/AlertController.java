@@ -1,5 +1,7 @@
 package de.unistuttgart.ma.backend;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,8 +11,9 @@ import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.backend.rest.Alert;
 import de.unistuttgart.ma.saga.System;
-import de.unistuttgart.ma.saga.impact.ImpactFactory;
-import de.unistuttgart.ma.saga.impact.Violation;
+import de.unistuttgart.ma.impact.ImpactFactory;
+import de.unistuttgart.ma.impact.Notification;
+import de.unistuttgart.ma.impact.Violation;
 
 /**
  * 
@@ -23,11 +26,13 @@ import de.unistuttgart.ma.saga.impact.Violation;
 public class AlertController {
 	
 	private final NotificationCreationService service;
+	private final CreateIssueService issueService;
 	private final SystemRepositoryProxy systemRepoProxy; 
 
-	public AlertController(@Autowired NotificationCreationService service, @Autowired SystemRepositoryProxy systemRepoProxy) {
+	public AlertController(@Autowired NotificationCreationService service, @Autowired SystemRepositoryProxy systemRepoProxy, @Autowired CreateIssueService issueService) {
 		this.service = service;
 		this.systemRepoProxy = systemRepoProxy;
+		this.issueService = issueService;
 	}
 
 	/**
@@ -45,8 +50,13 @@ public class AlertController {
 		
 		Violation v = ImpactFactory.eINSTANCE.createViolation();
 		v.setViolatedRule(rule);
-		// TODO : set value @ violation according to alert
-		service.calculateImpacts(v);
+		v.setPeriod(alert.getActualPeriod());
+		v.setThreshold(alert.getActualValue());
+		
+		Set<Notification> notes = service.calculateImpacts(v);
+		for (Notification notification : notes) {
+			issueService.createIssue(notification);
+		}
 	}
 
 

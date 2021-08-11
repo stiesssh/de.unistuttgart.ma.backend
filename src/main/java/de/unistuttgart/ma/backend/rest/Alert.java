@@ -1,6 +1,18 @@
 package de.unistuttgart.ma.backend.rest;
 
 public class Alert {
+	public Alert() {}
+	
+	public Alert(String gropiusProjectId, double actualValue, double actualPeriod, String sloId, String sloName) {
+		super();
+		this.gropiusProjectId = gropiusProjectId;
+		this.actualValue = actualValue;
+		this.actualPeriod = actualPeriod;
+		this.sloId = sloId;
+		this.sloName = sloName;
+	}
+	double actualValue;
+	double actualPeriod;
     String alertName;
     String alertDescription;
     String alertTime;
@@ -33,5 +45,11 @@ public class Alert {
 	}
 	public String getGropiusComponentId() {
 		return gropiusComponentId;
+	}
+	public double getActualValue() {
+		return actualValue;
+	}
+	public double getActualPeriod() {
+		return actualPeriod;
 	}   
 }

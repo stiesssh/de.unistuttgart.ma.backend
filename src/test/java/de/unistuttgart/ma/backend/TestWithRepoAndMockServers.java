@@ -31,12 +31,12 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
 public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 
 	static WireMockServer server;
-	static int port;
+	protected  static int port;
 
 	String base;
 
-	String solomon = "/solomonUrl/";
-	String gropius = "/gropiusUrl/api";
+	protected String solomon = "/solomonUrl/";
+	protected String gropius = "/gropiusUrl/api";
 
 	ImportRequest request;
 
@@ -95,9 +95,9 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 		stubFor(post(urlEqualTo(requestUri)).willReturn(aResponse().withBody(getIssue())));
 	}
 	
-	public void verifyGropiusIssue() {
+	public void verifyGropiusIssue(int calls) {
 		String requestUri = gropius;
-		server.verify(1, postRequestedFor(urlEqualTo(requestUri))
+		server.verify(calls, postRequestedFor(urlEqualTo(requestUri))
 		        .withHeader("Content-Type", equalTo("application/json")));
 	}
 	

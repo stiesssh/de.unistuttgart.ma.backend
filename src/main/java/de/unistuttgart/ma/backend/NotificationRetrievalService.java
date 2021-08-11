@@ -11,13 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.unistuttgart.ma.backend.repository.ImpactRepositoryProxy;
-import de.unistuttgart.ma.saga.impact.Impact;
-import de.unistuttgart.ma.saga.impact.ImpactFactory;
-import de.unistuttgart.ma.saga.impact.Notification;
+import de.unistuttgart.ma.impact.Impact;
+import de.unistuttgart.ma.impact.ImpactFactory;
+import de.unistuttgart.ma.impact.Notification;
 
 /**
  * Responsible for retrieving Notifications.
  * 
+ * TODO : delete, or fix the damn repo. 
+ *  
  * @author maumau
  *
  */
@@ -42,17 +44,17 @@ public class NotificationRetrievalService {
 	 * @return notification for system with given id
 	 * @throws IOExceptio if any de/serialisation failed.
 	 */
-	public String retrieveNotification(String systemId) throws IOException {
-		Set<Impact> impacts = repository.findBySystemId(systemId);
-		Notification note = makeContainerNotification(impacts);
-
-		Resource res = set.createResource(URI.createPlatformPluginURI("foo.impact", false));
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		res.getContents().add(note);
-		res.save(outputStream, null);
-
-		return outputStream.toString();
-	}
+//	public String retrieveNotification(String systemId) throws IOException {
+//		Set<Impact> impacts = repository.findBySystemId(systemId);
+//		Notification note = makeContainerNotification(impacts);
+//
+//		Resource res = set.createResource(URI.createPlatformPluginURI("foo.impact", false));
+//		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//		res.getContents().add(note);
+//		res.save(outputStream, null);
+//
+//		return outputStream.toString();
+//	}
 
 	/**
 	 * Create a new notification that contains the given impacts.
@@ -63,17 +65,17 @@ public class NotificationRetrievalService {
 	 * @param impacts the impacts
 	 * @return notifications that contains all given impacts
 	 */
-	private Notification makeContainerNotification(Set<Impact> impacts) {
-		Notification note = ImpactFactory.eINSTANCE.createNotification();
-		note.getTopLevelImpacts().addAll(impacts);
-
-		for (Impact impact : impacts) {
-			Impact current = impact;
-			while (current != null) {
-				note.getImpacts().add(current);
-				current = current.getCause();
-			}
-		}
-		return note;
-	}
+//	private Notification makeContainerNotification(Set<Impact> impacts) {
+//		Notification note = ImpactFactory.eINSTANCE.createNotification();
+//		note.getTopLevelImpacts().addAll(impacts);
+//
+//		for (Impact impact : impacts) {
+//			Impact current = impact;
+//			while (current != null) {
+//				note.getImpacts().add(current);
+//				current = current.getCause();
+//			}
+//		}
+//		return note;
+//	}
 }

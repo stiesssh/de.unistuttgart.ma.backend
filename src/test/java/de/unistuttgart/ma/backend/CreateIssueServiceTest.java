@@ -26,7 +26,7 @@ import de.unistuttgart.ma.impact.Violation;
  * @author maumau
  *
  */
-public class CreateIssueServiceTest extends TestWithMockServer {
+public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 
 	String uri; 
 	CreateIssueService service;
@@ -53,7 +53,7 @@ public class CreateIssueServiceTest extends TestWithMockServer {
 		Notification note = createImpact();
 		service.createIssue(note);
 		
-		verifyGropiusIssue();
+		verifyGropiusIssue(1);
 	}
 	
 	@Test

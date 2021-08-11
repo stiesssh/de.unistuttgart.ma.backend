@@ -16,9 +16,10 @@ import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.saga.Saga;
 import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.saga.System;
-import de.unistuttgart.ma.saga.impact.Impact;
-import de.unistuttgart.ma.saga.impact.ImpactFactory;
-import de.unistuttgart.ma.saga.impact.Violation;
+import de.unistuttgart.ma.impact.Impact;
+import de.unistuttgart.ma.impact.ImpactFactory;
+import de.unistuttgart.ma.impact.Notification;
+import de.unistuttgart.ma.impact.Violation;
 
 /**
  * calculates impact after receiving alert about and violation
@@ -28,50 +29,49 @@ import de.unistuttgart.ma.saga.impact.Violation;
  */
 @org.springframework.stereotype.Component
 public class NotificationCreationService {
-	
+
 	private final ImpactRepositoryProxy notificationRepoProxy;
 	private final SystemRepositoryProxy systemRepoProxy;
-	
-	public NotificationCreationService(@Autowired ImpactRepositoryProxy notificationRepoProxy, @Autowired SystemRepositoryProxy systemRepoProxy) {
+
+	public NotificationCreationService(@Autowired ImpactRepositoryProxy notificationRepoProxy,
+			@Autowired SystemRepositoryProxy systemRepoProxy) {
 		this.notificationRepoProxy = notificationRepoProxy;
 		this.systemRepoProxy = systemRepoProxy;
 	}
 
-	
 	/**
 	 * 
 	 * Compute the impact of a violation and store it in the repository
 	 * 
 	 * @param violation reported violation
 	 */
-	public void calculateImpacts(Violation violation) {
+	public Set<Notification> calculateImpacts(Violation violation) {
+
+		Set<Notification> notes = new HashSet<Notification>();
+		
 		
 		String architectureId = violation.getViolatedRule().getGropiusProject().getId();
-		
 		System system = systemRepoProxy.findByArchitectureId(architectureId);
-		
-		// set system...
-		// slo -> gropius project -> which system uses that project? -> add to those notifications.
-		
+
+
 
 		Queue<QueueItem> queue = new LinkedList<QueueItem>();
 		queue.addAll(makeInitialItems(violation));
-		
+
 		Queue<QueueItem> sagaqueue = new LinkedList<QueueItem>();
-		
+
 		// go along architecture
 		while (!queue.isEmpty()) {
 			QueueItem currentItem = queue.remove();
 			ComponentInterface current = currentItem.getLocationAsFace();
-			
+
 			// always cause new impact at current
 			Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
 			causedImpact.setCause(currentItem.getCause());
 			causedImpact.setLocation(current);
-			// does impact need name and id?? 
+			//causedImpact.setId(); // TODO 
 			
-			
-			
+
 			Set<SagaStep> nextSteps = getNextLevel(current, system);
 			if (nextSteps.isEmpty()) {
 				// traverse architecture
@@ -82,13 +82,13 @@ public class NotificationCreationService {
 					}
 				}
 			} else {
-				// switch to saga 
+				// switch to saga
 				for (SagaStep step : nextSteps) {
-					sagaqueue.add(new QueueItem(causedImpact, step));	
+					sagaqueue.add(new QueueItem(causedImpact, step));
 				}
-			}			
+			}
 		}
-	
+
 		// do saga
 		while (!sagaqueue.isEmpty()) {
 			QueueItem currentItem = sagaqueue.remove();
@@ -96,26 +96,28 @@ public class NotificationCreationService {
 
 			// always cause new impact at current
 			Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
-			
+
 			causedImpact.setLocation(current);
 			causedImpact.setCause(currentItem.getCause());
+			
 
-			// TODO : Behaviour :)
+			Impact topLevelImpact = ImpactFactory.eINSTANCE.createImpact();
+			topLevelImpact.setLocation(current.getTask());
+			topLevelImpact.setCause(causedImpact);
 
-			//for (Task task : current.getTask()) {
-				Impact topLevelImpact = ImpactFactory.eINSTANCE.createImpact();
-				topLevelImpact.setLocation(current.getTask());
-				topLevelImpact.setCause(causedImpact);
-				
-				
-				notificationRepoProxy.save(topLevelImpact, system.getId());
-			//}
-		}	
+			//notificationRepoProxy.save(topLevelImpact, system.getId());
+			Notification note = ImpactFactory.eINSTANCE.createNotification();
+			//note.setId(value);
+			note.setRootCause(violation);
+			note.setTopLevelImpact(topLevelImpact);
+			notes.add(note);
+		}
+		return notes;
 	}
-	
+
 	protected Set<SagaStep> getNextLevel(ComponentInterface face, System system) {
 		Set<SagaStep> nexts = new HashSet<>();
-		
+
 		// TODO : are these really the same objects, or do the just 'look' the same??
 		// TODO : maybe compare by id or override equals.
 		for (Saga saga : system.getSagas()) {
@@ -127,14 +129,14 @@ public class NotificationCreationService {
 		}
 		return nexts;
 	}
-	
+
 	/**
 	 * 
 	 * Create the initial Items for the Queue.
 	 *
-	 * Violations may happen at a Component as well as an Interface. However the impact
-	 * computation operates on Interfaces. As such in case of a violation at a
-	 * component, the initial items are that components provided interfaces. With
+	 * Violations may happen at a Component as well as an Interface. However the
+	 * impact computation operates on Interfaces. As such in case of a violation at
+	 * a component, the initial items are that components provided interfaces. With
 	 * 'cause' being the initial violation. In case the violation happens at an
 	 * interface, the initial violations are the provided interfaces of the
 	 * consuming components, or else i would 'loose' the actual violation.
@@ -142,38 +144,50 @@ public class NotificationCreationService {
 	 * (because queueItem = previous impact x (small) location, but if location is
 	 * location of actual violation, then previous impact is null and everything
 	 * breaks...)
-	 * 	
+	 * 
 	 * @param violation
 	 * @return
 	 */
 	private Set<QueueItem> makeInitialItems(Violation violation) {
 
 		Set<QueueItem> initialItems = new HashSet<>();
-		Set<Component> firstImpact = new HashSet<>();
 
 		// "finer grain" (interface is set)
 		if (violation.getViolatedRule().getGropiusComponentInterface() != null) {
-			firstImpact.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
+			Set<Component> impactedComponents = new HashSet<>();
+			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
+			
+			Impact initialImpact = ImpactFactory.eINSTANCE.createImpact();
+			initialImpact.setCause(null);
+			initialImpact.setLocation(violation.getViolatedRule().getGropiusComponentInterface());
+			
+			for (Component c : impactedComponents) {
+				for (ComponentInterface face : c.getInterfaces()) {
+					initialItems.add(new QueueItem(initialImpact, face));
+				}
+			}
 
-		// "coarser grain" (interface not set, violation aggregated at component)
+			// "coarser grain" (interface not set, violation aggregated at component)
 		} else if (violation.getViolatedRule().getGropiusComponent() != null) {
 			EList<ComponentInterface> faces = violation.getViolatedRule().getGropiusComponent().getInterfaces();
 			for (ComponentInterface componentInterface : faces) {
-				firstImpact.addAll(componentInterface.getConsumedBy());
+				Impact initialImpact = ImpactFactory.eINSTANCE.createImpact();
+				initialImpact.setCause(null);
+				initialImpact.setLocation(componentInterface);
+				
+				for (Component c : componentInterface.getConsumedBy()) {
+					for (ComponentInterface face : c.getInterfaces()) {
+						initialItems.add(new QueueItem(initialImpact, face));
+					}
+				}
 			}
-			
 		} else {
-			throw new IllegalArgumentException("the given violation does not is missing a location");
+			throw new IllegalArgumentException("the given violation does not have a location");
 		}
-		
 
-		for (Component c : firstImpact) {
-			for (ComponentInterface face : c.getInterfaces()) {
-				initialItems.add(new QueueItem(violation, face));
-			}
-		}
+		
+		
 
 		return initialItems;
 	}
 }
-
