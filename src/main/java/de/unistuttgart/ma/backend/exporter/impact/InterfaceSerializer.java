@@ -2,13 +2,11 @@ package de.unistuttgart.ma.backend.exporter.impact;
 
 import java.io.IOException;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import de.unistuttgart.gropius.api.ComponentInterface;
+import de.unistuttgart.gropius.ComponentInterface;
 
 /**
  * 

@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.IssueLocation;
-import de.unistuttgart.gropius.api.ComponentInterface;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exporter.impact.ImpactSerializer;
@@ -75,15 +75,10 @@ public class CreateIssueService {
 	 */
 	public void createIssue(Notification topLevelImpact) {
 
-		String body = "";
-		try {
-			body = parseToJson(topLevelImpact);
-		} catch (JsonProcessingException e) {
-			logger.info(String.format("Could not serialize to JOSN"));
-		}
+		String body = createHumanBody(topLevelImpact);
 		String title = createTitle(topLevelImpact);
 		
-		// TODO unfake the issue
+		// TODO unfake the issue location
 		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation("5ecd41d2e205a003", body, title);
 
 		try {
@@ -103,6 +98,37 @@ public class CreateIssueService {
 	 */
 	protected String parseToJson(Notification topLevelImpact) throws JsonProcessingException {
 		return mapper.writeValueAsString(topLevelImpact);
+	}
+	
+	/**
+	 * 
+	 * @param json representation of impact chain
+	 * @return body for issue
+	 */
+	protected String createHumanBody(Notification note) {
+		StringBuilder sb = new StringBuilder();
+		
+		// for the machine
+		sb.append("[//]: # ("); 
+		try {
+			sb.append(parseToJson(note));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		sb.append(")").append("\n");
+		
+		// for the human
+		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
+		appendHhumanRootCause(note.getRootCause(), sb);
+		sb.append("* Path :\n");
+		Impact current = note.getTopLevelImpact();
+		while (current != null) {
+			appendHumanPathStep(current, sb);
+			current = current.getCause();
+		}
+				
+		
+		return sb.toString();
 	}
 
 	/**
@@ -137,5 +163,15 @@ public class CreateIssueService {
 			return ((FlowElement) topLevelImpact.getLocation()).getName();
 		}
 		throw new IllegalStateException("illegal model");
+	}
+	
+	protected void appendHumanLocation(Object obj, StringBuilder sb) {
+		sb.append("* Location : **").append(obj.toString()).append("**").append("\n");
+	}
+	protected void appendHhumanRootCause(Violation violation, StringBuilder sb) {
+		sb.append("* Root Cause  : Violation of **").append(violation.getViolatedRule().getName()).append("**").append("\n");
+	}
+	protected void appendHumanPathStep(Impact impact, StringBuilder sb) {
+		sb.append("  * **").append(impact.getLocation().toString()).append("**").append("\n");
 	}
 }

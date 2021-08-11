@@ -49,17 +49,17 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 	 */
 	@Test
 	public void testCreateIssueMutation() throws IOException, InterruptedException {				
-		
-		Notification note = createImpact();
+		loadSystem();
+		Notification note = createImpactChain();
 		service.createIssue(note);
 		
 		verifyGropiusIssue(1);
 	}
 	
 	@Test
-	public void testCreateJson() throws JsonProcessingException {
-
-		Notification note = createImpact();
+	public void testCreateJson() throws IOException {
+		loadSystem();
+		Notification note = createImpactChain();
 		
 		CreateIssueService service = new CreateIssueService(uri);
 		System.out.println(service.parseToJson(note));
@@ -68,38 +68,15 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 
 	}
 	
-	private Notification createImpact() {
-		Task task = Bpmn2Factory.eINSTANCE.createTask();
-		task.setId("taskid");
-		task.setName("taskname");
-		SagaStep step = SagaFactory.eINSTANCE.createSagaStep();
-		step.setId("stepid");
-		step.setName("stepname");
-		SloRule rule = SloFactory.eINSTANCE.createSloRule();
-		rule.setId("sloruleid");
-		rule.setName("sloruleName");
-		Issue issue = GropiusFactory.eINSTANCE.createIssue();
-		issue.setId("issueId");
+	@Test
+	public void testHumanBody() throws IOException {
+		loadSystem();
+		Notification note = createImpactChain();
 		
-		Impact impact = ImpactFactory.eINSTANCE.createImpact();
-		impact.setLocation(task);
-		impact.setId("impact1");
-		Impact impact2 = ImpactFactory.eINSTANCE.createImpact();
-		impact2.setLocation(step);
-		impact2.setId("impact2");
+		CreateIssueService service = new CreateIssueService(uri);
+		System.out.println(service.createHumanBody(note));
 		
-		impact.setCause(impact2);
+		// TODO : assert !?!?
 
-		Violation violation = ImpactFactory.eINSTANCE.createViolation();
-		violation.setViolatedRule(rule);
-		violation.setIssue(issue);
-		violation.setPeriod(0.0);
-		violation.setThreshold(0.0);
-		
-		Notification note = ImpactFactory.eINSTANCE.createNotification();
-		note.setTopLevelImpact(impact);
-		note.setRootCause(violation);
-		
-		return note;
 	}
 }
