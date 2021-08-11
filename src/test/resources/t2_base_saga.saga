@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <saga:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI" xmlns:saga="http://www.example.org/saga" id="60fa9cadc736ff6357a89a9b" name="t2-base.saga">
   <sagas id="someSaga">
-    <steps id="paymentStep" task="Task_3" componentInterface="//@architecture/@components.6/@interfaces.0"/>
+    <steps id="paymentStep" task="Task_4" componentInterface="//@architecture/@components.6/@interfaces.0"/>
     <steps id="orderStep" task="Task_3" nextStep="inventoryStep" componentInterface="//@architecture/@components.5/@interfaces.0"/>
     <steps id="inventoryStep" task="Task_5" nextStep="paymentStep" componentInterface="//@architecture/@components.3/@interfaces.1"/>
   </sagas>

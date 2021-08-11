@@ -57,6 +57,8 @@ jobs:
       run: cd sirius/de.unistuttgart.gropius.slo && mvn clean install
     - name: build saga
       run: cd sirius/de.unistuttgart.ma.saga && mvn clean install
+    - name: build impact
+      run: cd sirius/de.unistuttgart.ma.impact && mvn clean install
     - name: verify backend
       run: cd backend && ./mvnw clean install
     - run: |
