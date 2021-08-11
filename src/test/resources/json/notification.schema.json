@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "notification",
+    "description": "a notification",
+    "type": "object",
+    "properties": {
+    	"rootCause" : {
+    		"title": "violation",
+    		"description": "violation of slorule",
+      		"type" : "object",
+            "properties": {
+            	"slorule" : {
+    				"description": "violated slorule",
+      				"type" : "object"
+    			},
+      			"actual" : {
+      				"description": "values of the violation",
+      				"type" : "object"
+    			}
+    		}
+      	},
+        "impacts": {
+            "type": "array",
+            "items": { 
+    			"title": "impact",
+    			"description": "impact on a location",
+            	"type": "object",
+            	"properties": {
+            		"id" : {
+    					"description": "id of this impact",
+      					"type" : "string"
+    				},
+      				"cause" : {
+      					"description": "id of impact that caused this impact",
+      					"type" : "string"
+    				},
+    				"location" : {
+    					"title": "location",
+    					"description": "location of this impact",
+            			"type": "object",
+            			"properties": {
+            				"id" : {
+    							"description": "id of the location",
+      							"type" : "string"
+    						},
+    						"name" : {
+    							"description": "name of the location",
+      							"type" : "string"
+    						}
+            			}
+    				}    				
+    			}
+            },
+            "minItems": 1,
+            "uniqueItems": true
+       }
+    }
+}

@@ -15,9 +15,9 @@ import de.unistuttgart.ma.impact.Impact;
  * @author maumau
  *
  */
-public class ImpactTreeSerializer extends StdSerializer<Impact> {
+public class ImpactSerializer extends StdSerializer<Impact> {
 
-	public ImpactTreeSerializer(Class<Impact> t) {
+	public ImpactSerializer(Class<Impact> t) {
 		super(t);
 	}
 	 
@@ -26,14 +26,12 @@ public class ImpactTreeSerializer extends StdSerializer<Impact> {
 	public void serialize(Impact value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 				 
         jgen.writeStartObject();
+        jgen.writeStringField("id", value.getId());
         jgen.writeObjectField("location", value.getLocation());
-        jgen.writeObjectField("cause", value.getCause()); 
+        if (value.getCause() != null) {
+        	jgen.writeStringField("cause", value.getCause().getId());
+        }
         jgen.writeEndObject();
 		
 	}
-	
-	protected void serializeLocation(EObject location, JsonGenerator jgen) {
-		
-	}
-
 }

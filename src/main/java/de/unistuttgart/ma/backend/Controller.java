@@ -29,9 +29,7 @@ public class Controller {
 
 	
 	private final NotificationRetrievalService service;
-	private final SagaImporterService importService;
-	
-	@Autowired TestSetup test;
+	private final SagaImporterService importService;	
 
 	public Controller(@Autowired NotificationRetrievalService service, @Autowired SagaImporterService importService) {
 		this.service = service;
@@ -61,26 +59,6 @@ public class Controller {
 		}
 		throw new CouldNotSaveSystemModelException("import failed");
 	}
-
-	/**
-	 * 
-	 * Endpoint to get a notification in xml representation.
-	 * 
-	 * TODO : filter options??
-	 *
-	 * @return
-	 * @throws IOException
-	 * @throws MissingSystemModelException
-	 */
-//	@GetMapping("/api/notification/{systemId}")
-//	public String getNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
-//		return service.retrieveNotification(systemId);
-//	}
-
-//	@GetMapping("/api/fake/{systemId}")
-//	public void fakeNotification(@PathVariable String systemId) throws IOException, MissingSystemModelException {
-//		test.init(systemId);
-//	}
 
 	
 	@GetMapping("/")

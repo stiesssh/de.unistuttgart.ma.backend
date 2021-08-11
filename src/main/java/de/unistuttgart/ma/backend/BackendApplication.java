@@ -25,23 +25,4 @@ public class BackendApplication {
 	public ResourceSet resourceSet() {
 		return new ResourceSetImpl();
 	}
-	
-//	@Autowired NotificationRespository notificationRespo;
-//	@Autowired SystemRepository systemRepo;
-//	
-//	@Bean
-//	public NotificationRepositoryProxy notificationRepositoryProxy() {
-//		return new NotificationRepositoryProxy(notificationRespo);
-//	}
-//	
-//	@Bean
-//	public SystemRepositoryProxy systemRepositoryProxy() {
-//		return new SystemRepositoryProxy(systemRepo);
-//	}
-//	
-//	@Bean
-//	public NotificationCreationService notificationCreationService () {
-//		return new NotificationCreationService();
-//	}
-
 }

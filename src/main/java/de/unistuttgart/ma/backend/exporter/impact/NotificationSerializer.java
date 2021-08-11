@@ -26,10 +26,10 @@ import de.unistuttgart.ma.saga.SagaStep;
  * @author maumau
  *
  */
-public class NotificationListSerializer extends StdSerializer<Notification> {
+public class NotificationSerializer extends StdSerializer<Notification> {
 
 	
-	public NotificationListSerializer(Class<Notification> t) {
+	public NotificationSerializer(Class<Notification> t) {
 		super(t);
 	}
 	 

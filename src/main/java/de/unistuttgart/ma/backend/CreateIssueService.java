@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,10 +17,9 @@ import de.unistuttgart.gropius.IssueLocation;
 import de.unistuttgart.gropius.api.ComponentInterface;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.slo.SloRule;
-import de.unistuttgart.ma.backend.exporter.impact.ImpactListSerializer;
+import de.unistuttgart.ma.backend.exporter.impact.ImpactSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.InterfaceSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.NotificationListSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.NotificationTreeSerializer;
+import de.unistuttgart.ma.backend.exporter.impact.NotificationSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.SloRuleSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.StepSerializer;
 import de.unistuttgart.ma.backend.exporter.impact.TaskSerializer;
@@ -49,20 +49,17 @@ public class CreateIssueService {
 	private final GropiusApiQuerier querier;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-	// TODO @Value for uri 
-	public CreateIssueService(String uri) {
+ 
+	public CreateIssueService(@Value("${gropius.url}") String uri) {
 		module = new SimpleModule();
 		
-		module.addSerializer(Notification.class, new NotificationListSerializer(Notification.class));
-		module.addSerializer(Impact.class, new ImpactListSerializer(Impact.class));
+		module.addSerializer(Notification.class, new NotificationSerializer(Notification.class));
+		module.addSerializer(Impact.class, new ImpactSerializer(Impact.class));
 		module.addSerializer(Violation.class, new ViolationSerializer(Violation.class));
 		module.addSerializer(SagaStep.class, new StepSerializer(SagaStep.class));
 		module.addSerializer(Task.class, new TaskSerializer(Task.class));
 		module.addSerializer(ComponentInterface.class, new InterfaceSerializer(ComponentInterface.class));
 		module.addSerializer(SloRule.class, new SloRuleSerializer(SloRule.class));
-		//module.addSerializer(Notification.class, new NotificationTreeSerializer(Notification.class));
-		//module.addSerializer(Impact.class, new ImpactTreeSerializer(Impact.class));
 
 		mapper = new ObjectMapper();
 		mapper.registerModule(module);
@@ -85,8 +82,9 @@ public class CreateIssueService {
 			logger.info(String.format("Could not serialize to JOSN"));
 		}
 		String title = createTitle(topLevelImpact);
-
-		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation("", body, title);
+		
+		// TODO unfake the issue
+		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation("5ecd41d2e205a003", body, title);
 
 		try {
 			querier.queryMutation(mutation);
