@@ -29,7 +29,7 @@ public class AlertControllerTest extends TestWithRepoAndMockServers{
 		service = new CreateIssueService(uri);
 		controller = new AlertController(computationService, systemRepoProxy, service);
 		
-		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo");
+		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo", "5ecd5d74e135b005");
 	}
 	
 	@Test 

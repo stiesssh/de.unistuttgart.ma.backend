@@ -3,13 +3,14 @@ package de.unistuttgart.ma.backend.rest;
 public class Alert {
 	public Alert() {}
 	
-	public Alert(String gropiusProjectId, double actualValue, double actualPeriod, String sloId, String sloName) {
+	public Alert(String gropiusProjectId, double actualValue, double actualPeriod, String sloId, String sloName, String issueId) {
 		super();
 		this.gropiusProjectId = gropiusProjectId;
 		this.actualValue = actualValue;
 		this.actualPeriod = actualPeriod;
 		this.sloId = sloId;
 		this.sloName = sloName;
+		this.issueId = issueId;
 	}
 	double actualValue;
 	double actualPeriod;
@@ -21,6 +22,7 @@ public class Alert {
     String triggeringTargetName;
     String gropiusProjectId;
     String gropiusComponentId;
+    String issueId;
     
 	public String getAlertName() {
 		return alertName;
@@ -52,4 +54,7 @@ public class Alert {
 	public double getActualPeriod() {
 		return actualPeriod;
 	}   
+	public String getIssueId() {
+		return issueId;
+	}
 }

@@ -55,7 +55,7 @@ public class AlertController {
 	public void receiveAlert(@RequestBody Alert alert) throws IssueCreationFailedException, IssueLinkageFailedException {
 		String sloId = alert.getSloId();
 		String archId = alert.getGropiusProjectId();
-		ID relatedIssueId = new ID("5ecd5d74e135b005"); // TODO 
+		ID relatedIssueId = new ID(alert.getIssueId()); 
 		
 		System system = systemRepoProxy.findByArchitectureId(archId);
 		SloRule rule = system.getSloRules().stream().filter(s -> s.getName().equals(sloId)).findFirst().get();
