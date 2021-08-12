@@ -1,27 +1,29 @@
-package de.unistuttgart.ma.backend.exporter.impact;
+package de.unistuttgart.ma.backend.serializer;
 
 import java.io.IOException;
 
-import org.eclipse.bpmn2.Task;
+import org.eclipse.emf.ecore.EObject;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import de.unistuttgart.ma.saga.SagaStep;
 
 /**
  * 
  * @author maumau
  *
  */
-public class TaskSerializer extends StdSerializer<Task> {
+public class StepSerializer extends StdSerializer<SagaStep> {
 
-	public TaskSerializer(Class<Task> t) {
+	public StepSerializer(Class<SagaStep> t) {
 		super(t);
 	}
 	 
 
 	@Override
-	public void serialize(Task value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+	public void serialize(SagaStep value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 		jgen.writeStartObject();
         jgen.writeStringField("name", value.getName());
         jgen.writeStringField("id", value.getId().toString());

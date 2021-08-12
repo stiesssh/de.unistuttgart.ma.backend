@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend.exporter.impact;
+package de.unistuttgart.ma.backend.serializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
