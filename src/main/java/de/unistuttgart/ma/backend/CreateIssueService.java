@@ -21,15 +21,15 @@ import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
-import de.unistuttgart.ma.backend.exporter.impact.ImpactSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.InterfaceSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.NotificationSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.SloRuleSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.StepSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.TaskSerializer;
-import de.unistuttgart.ma.backend.exporter.impact.ViolationSerializer;
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQuerier;
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQueries;
+import de.unistuttgart.ma.backend.serializer.ImpactSerializer;
+import de.unistuttgart.ma.backend.serializer.InterfaceSerializer;
+import de.unistuttgart.ma.backend.serializer.NotificationSerializer;
+import de.unistuttgart.ma.backend.serializer.SloRuleSerializer;
+import de.unistuttgart.ma.backend.serializer.StepSerializer;
+import de.unistuttgart.ma.backend.serializer.TaskSerializer;
+import de.unistuttgart.ma.backend.serializer.ViolationSerializer;
 import de.unistuttgart.ma.saga.IdentifiableElement;
 import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.impact.Impact;
@@ -76,22 +76,16 @@ public class CreateIssueService {
 	 * Create a Gropius issue for given impact.
 	 * 
 	 * @param topLevelImpact impact to create issue for
-	 * @throws IssueCreationFailedException 
+	 * @throws IssueCreationFailedException
 	 */
-	public ID createIssue(Notification topLevelImpact) throws IssueCreationFailedException {
+	public ID createIssue(Notification topLevelImpact, IssueLocation location) throws IssueCreationFailedException {
 
 		String body = createHumanBody(topLevelImpact);
 		String title = createTitle(topLevelImpact);
 
-		// TODO unfake the issue location
-		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation("5ecd41d2e205a003", body, title);
-
-		try {
-			return querier.queryMutation(mutation).getCreateIssue().getIssue().getId();
-		} catch (IOException | InterruptedException e) {
-			logger.debug(e.getMessage());
-			throw new IssueCreationFailedException("Failed to create Issue", e);
-		}
+		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
+		
+		return querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
 	}
 
 	/**
@@ -187,17 +181,10 @@ public class CreateIssueService {
 	 * 
 	 * @param origin
 	 * @param destination
-	 * @throws IssueLinkageFailedException 
+	 * @throws IssueLinkageFailedException
 	 */
 	public void linkIssue(ID origin, ID destination) throws IssueLinkageFailedException {
 		MutationQuery mutation = GropiusApiQueries.getLinkIssueMutation(origin, destination);
-
-		try {
-			querier.queryMutation(mutation);
-		} catch (IOException | InterruptedException e) {
-			logger.info(String.format("Issue linking for"));
-			throw new IssueLinkageFailedException("issue linking failed", e);
-		}
-
+		querier.queryLinkIssueMutation(mutation);
 	}
 }

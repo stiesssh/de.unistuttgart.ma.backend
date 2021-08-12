@@ -42,12 +42,8 @@ public class Controller {
 	 * @param xml updated model as XML
 	 */
 	@PostMapping("/api/model/{filename}")
-	public void updateModel(@RequestBody String xml, @PathVariable String filename) {
-		try {
-			importService.parse(xml);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
+		importService.updateModel(xml, systemId);
 	}
 	
 	@PostMapping("/api/foo")

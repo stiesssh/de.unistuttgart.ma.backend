@@ -27,7 +27,7 @@ public class AlertControllerTest extends TestWithRepoAndMockServers{
 		super.setUp();
 		uri = "http://localhost:" + port + gropius;
 		service = new CreateIssueService(uri);
-		controller = new AlertController(computationService, systemRepoProxy, service);
+		controller = new AlertController(computationService, systemRepoProxy, service, "fake_issue_location_id");
 		
 		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo", "5ecd5d74e135b005");
 	}

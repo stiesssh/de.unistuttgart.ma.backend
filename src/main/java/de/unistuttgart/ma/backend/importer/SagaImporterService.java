@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import de.unistuttgart.gropius.Project;
 import de.unistuttgart.gropius.slo.SloRule;
@@ -48,32 +49,6 @@ public class SagaImporterService {
 		SagaPackage packageInstance = SagaPackage.eINSTANCE;
 	}
 
-	/**
-	 * Parse a system from xml and save it to the repository. 
-	 * 
-	 * @param xml serialised system
-	 * @param filename to match the resourceUri to the frontend 
-	 * @throws IOException
-	 */
-	public void parse(String xml) throws IOException {
-		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-
-		// create with correct file name, such that references also work on front end.
-		Resource resource = set.getResource(URI.createPlatformResourceURI("foo.saga", false), false);
-		if (resource == null) {
-			resource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
-		}
-		resource.load(inputStream, null);
-
-		for (EObject eObject : resource.getContents()) {
-			if (eObject instanceof System) {
-				systemRepoProxy.save((System) eObject);
-				return;
-			}
-		}
-
-	}
-
 	public String getIdForSystemModel(String filename) {
 		return systemRepoProxy.getIdForFilename(filename);
 	}
@@ -100,6 +75,16 @@ public class SagaImporterService {
 		return systemRepoProxy.findXMLById(id);
 	}
 
+	
+	/**
+	 * 
+	 * @param xml
+	 * @param systemId
+	 */
+	public void updateModel(String xml, String systemId) {
+		systemRepoProxy.updateModel(xml, systemId);
+	}
+	
 	/**
 	 * import SLO rules.
 	 * 

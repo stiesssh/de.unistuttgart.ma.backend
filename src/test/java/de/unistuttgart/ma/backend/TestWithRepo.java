@@ -2,13 +2,16 @@ package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.eclipse.bpmn2.Bpmn2Factory;
-import org.eclipse.bpmn2.Task;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +23,6 @@ import org.springframework.test.context.ContextConfiguration;
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.GropiusFactory;
 import de.unistuttgart.gropius.Issue;
-import de.unistuttgart.gropius.slo.SloFactory;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.importer.SagaImporterService;
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
@@ -31,8 +33,7 @@ import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.ImpactFactory;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
-import de.unistuttgart.ma.saga.SagaFactory;
-import de.unistuttgart.ma.saga.SagaStep;
+import de.unistuttgart.ma.saga.System;
 
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest
@@ -81,8 +82,19 @@ public abstract class TestWithRepo {
 	public void loadSystem() throws IOException  {
 		long size = systemRepo.count();
 		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);					
-		importService.parse(xml);
 		
+		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+		
+		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
+		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
+		recource.load(inputStream, null);
+
+		for (EObject eObject : recource.getContents()) {
+			if (eObject instanceof System) {
+				systemRepoProxy.save((System) eObject);
+			}
+		}
+
 		system = systemRepoProxy.findById(systemId);
 				
 		assertEquals(size + 1, systemRepo.count());

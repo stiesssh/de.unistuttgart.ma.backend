@@ -3,7 +3,9 @@ package de.unistuttgart.ma.backend;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -13,22 +15,43 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import de.unistuttgart.ma.saga.System;
+
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest
 @ActiveProfiles("test")
-class SagaImporterTest extends TestWithRepoAndMockServers {
+class LoadModelsTest extends TestWithRepoAndMockServers {
+	
+	protected System loadSystem(String file) throws IOException {
+		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);					
+		
+		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+		
+		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
+		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
+		recource.load(inputStream, null);
+
+		for (EObject eObject : recource.getContents()) {
+			if (eObject instanceof System) {
+				systemRepoProxy.save((System) eObject);
+			}
+		}
+
+		return systemRepoProxy.findById(systemId);
+	}
 
 	@Test
 	void parseEmptySystemTest() throws IOException {
 		String filename = "empty.saga";
-		String xml = Files.readString(Paths.get("src/test/resources/", filename), StandardCharsets.UTF_8);
 
-		importService.parse(xml);
+		loadSystem(filename);
 		assertEquals(1, systemRepo.count());
 
 		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById("60fa9cadc736ff6357a89a9b");
@@ -45,7 +68,7 @@ class SagaImporterTest extends TestWithRepoAndMockServers {
 		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);
 		String filename = "t2-base.saga";
 
-		importService.parse(xml);
+		loadSystem("t2_base_saga.saga");
 		assertEquals(1, systemRepo.count());
 
 		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById("60fa9cadc736ff6357a89a9b");
@@ -63,20 +86,6 @@ class SagaImporterTest extends TestWithRepoAndMockServers {
 	@Test
 	void creationTest() throws IOException, InterruptedException {
 		HttpClient httpClient = HttpClient.newBuilder().build();
-		{
-			HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().GET()
-					.uri(java.net.URI.create("http://localhost:" + port + "/a"));
-
-			HttpResponse<String> response = httpClient.send(requestBuilder.build(), BodyHandlers.ofString());
-			System.out.println(response.body());
-		}
-		{
-			HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().GET()
-					.uri(java.net.URI.create("http://localhost:" + port + "/b"));
-
-			HttpResponse<String> response = httpClient.send(requestBuilder.build(), BodyHandlers.ofString());
-			System.out.println(response.body());
-		}
 		
 		importService.createModel(request);
 	}

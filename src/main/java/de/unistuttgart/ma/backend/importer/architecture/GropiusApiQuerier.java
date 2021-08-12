@@ -10,7 +10,11 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -18,6 +22,8 @@ import de.unistuttgart.gropius.api.Mutation;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.api.Query;
 import de.unistuttgart.gropius.api.QueryQuery;
+import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
+import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 
 /**
  * This class is responsible for querying the Gropius back end for Queries and Mutations. 
@@ -29,6 +35,8 @@ public class GropiusApiQuerier {
 	private final URI apiUri;
 	private final Gson gsonInstance;
 	private final HttpClient httpClient;
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public GropiusApiQuerier(final String apiUri) {
 		this.gsonInstance = new GsonBuilder().registerTypeAdapter(Mutation.class, new MutationDeserializer())
@@ -89,11 +97,11 @@ public class GropiusApiQuerier {
 	 * Queries the Gropius back end for the given mutation.
 	 * 
 	 * @param query the graphql mutation
-	 * @return the mutation, that was queried for
+	 * @return the mutation, as json
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public Mutation queryMutation(MutationQuery query) throws IOException, InterruptedException {
+	public String queryMutation(MutationQuery query) throws IOException, InterruptedException {
 
 		String escaped = StringEscapeUtils.escapeJson(query.toString());
 		String full = "{\"query\":\"" + escaped + "\",\"variables\":null}";
@@ -101,9 +109,51 @@ public class GropiusApiQuerier {
 		URI requestUri = URI.create(apiUri.toString());
 		HttpRequest request = HttpRequest.newBuilder().POST(BodyPublishers.ofString(full)).uri(requestUri)
 				.header("Content-Type", "application/json").build();
+		
+		return request(request);
+	}
+	
+	/**
+	 * Queries the Gropius back end with the given mutation to link two issues.
+	 * 
+	 * @param query the mutation
+	 * @return the mutation
+	 * @throws IssueLinkageFailedException 
+	 */
+	public Mutation queryLinkIssueMutation(MutationQuery query) throws IssueLinkageFailedException {
 
-		String body = request(request);
+		String body;
+		try {
+			body = queryMutation(query);
+		} catch (IOException | InterruptedException e) {
+			throw new IssueLinkageFailedException("linking issue failed", e);
+		}
+		if (body.contains("errors")) {
+			throw new IssueLinkageFailedException(body, null);
+		}
+	
+		return gsonInstance.fromJson(body, Mutation.class);
+	}
+	
+	/**
+	 * Queries the Gropius back end with the given mutation to create a new issues.
+	 * 
+	 * @param query the mutation
+	 * @return the mutation
+	 * @throws IssueLinkageFailedException 
+	 */
+	public Mutation queryCreateIssueMutation(MutationQuery query) throws IssueCreationFailedException {
 
+		String body;
+		try {
+			body = queryMutation(query);
+		} catch (IOException | InterruptedException e) {
+			throw new IssueCreationFailedException("creating issue failed", e);
+		}
+		if (body.contains("errors")) {
+			throw new IssueCreationFailedException(body, null);
+		}
+	
 		return gsonInstance.fromJson(body, Mutation.class);
 	}
 }

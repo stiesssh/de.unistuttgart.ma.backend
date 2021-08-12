@@ -8,14 +8,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import javax.swing.plaf.synth.SynthStyleFactory;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +39,8 @@ public class SystemRepositoryProxy {
 	private final SystemRepository repository;
 	private final ResourceSet set;
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
 	public SystemRepositoryProxy(@Autowired SystemRepository repository, @Autowired ResourceSet set) {
 		this.repository = repository;
 		this.set = set;
@@ -42,23 +49,26 @@ public class SystemRepositoryProxy {
 		this.projectId2SystemId = new HashMap<>();
 		this.systemId2ResourceUri = new HashMap<>();
 
-		// load maps from data base.
+		init();
 	}
 
-	// TODO DELETE
-	public void testInit() throws IOException {
-//		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base.saga"), StandardCharsets.UTF_8);
-//		// URI uri = URI.createFileURI("fiii/Myqwer.saga");
-//		URI uri = URI.createFileURI("test/test.saga");
-//		String filename = uri.path();
-//		String id = "60fa9cadc736ff6357a89a9b";
-//
-//		SystemItem item = new SystemItem(id, xml, filename);
-//
-//		repository.save(item);
-//
-//		systemId2ResourceUri.put(item.getId(), item.getFilename());
-//		projectId2SystemId.put("5e8cc17ed645a00c", id);
+	/**
+	 * load the architecture id to system id / system id to resource mappings for
+	 * all system in the database
+	 */
+	public void init() {
+		List<SystemItem> items = repository.findAll();
+		logger.info(String.format("loading %d entries from database.", items.size()));
+		for (SystemItem item : items) {
+			try {
+				System system = deserializeSystem(item.getContent(), item.getFilename());
+				projectId2SystemId.put(system.getArchitecture().getId(), system.getId());
+				systemId2ResourceUri.put(system.getId(), item.getFilename());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	// systemItemid -> system
@@ -90,15 +100,28 @@ public class SystemRepositoryProxy {
 			SystemItem item = repository.save(new SystemItem(system.getId(), null, system.getName()));
 			systemId2ResourceUri.put(item.getId(), item.getFilename());
 		}
-			
+
 		SystemItem item = repository.findById(system.getId()).get();
 
 		repository.save(new SystemItem(item.getId(), serializeSystem(system), item.getFilename()));
 		projectId2SystemId.put(system.getArchitecture().getId(), system.getId());
-		
+
 		return item.getId();
 	}
 	
+	/**
+	 * update model by replacing its xml with another one.
+	 * 
+	 * @param xml the model as xml
+	 * @param systemId id of the system in the model
+	 */
+	public void updateModel(String xml, String systemId) {
+		if (repository.existsById(systemId)) {
+			SystemItem item = repository.findById(systemId).get();
+			repository.save(new SystemItem(systemId, xml, item.getFilename()));
+		}
+	}
+
 	/**
 	 * 
 	 * @param system system with unset id
@@ -108,13 +131,13 @@ public class SystemRepositoryProxy {
 	public String getIdForSystem(System system) throws IOException {
 		SystemItem item = repository.save(new SystemItem(null, null, system.getName()));
 		systemId2ResourceUri.put(item.getId(), item.getFilename());
-		return item.getId();	
+		return item.getId();
 	}
 
 	/**
-	 * Find the System that imports the architecture with the given project id. 
+	 * Find the System that imports the architecture with the given project id.
 	 * 
-	 * @param projectId id of a gropius project. 
+	 * @param projectId id of a gropius project.
 	 * @return system that import the gropius architecture with the given projectId
 	 */
 	public System findByArchitectureId(String projectId) {
@@ -143,7 +166,7 @@ public class SystemRepositoryProxy {
 		}
 		throw new NoSuchElementException(String.format("Missing System for id %s", id));
 	}
-	
+
 	/**
 	 * Find the System with the given id.
 	 * 
@@ -159,9 +182,9 @@ public class SystemRepositoryProxy {
 	}
 
 	/**
-	 * reserve an entry in the database for the model. 
+	 * reserve an entry in the database for the model.
 	 * 
-	 * @param fileuri uri of the file at the frontend. 
+	 * @param fileuri uri of the file at the frontend.
 	 * @return an id
 	 */
 	public String getIdForFilename(String fileuri) {
