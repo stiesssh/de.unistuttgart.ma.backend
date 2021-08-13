@@ -118,6 +118,8 @@ public class SystemRepositoryProxy {
 	/**
 	 * update model by replacing its xml with another one.
 	 * 
+	 * if there is no model matching the given systemId, the model is saved to the db as a new entry. 
+	 * 
 	 * @param xml      the model as xml
 	 * @param systemId id of the system in the model
 	 */
@@ -125,8 +127,10 @@ public class SystemRepositoryProxy {
 		if (repository.existsById(systemId)) {
 			SystemItem item = repository.findById(systemId).get();
 			repository.save(new SystemItem(systemId, xml, item.getFilename()));
+			logger.info(String.format("updated model %s", systemId));
 		} else {
 			repository.save(new SystemItem(systemId, xml, systemId + ".saga"));
+			logger.info(String.format("no model %s, saved as new model", systemId));
 		}
 	}
 

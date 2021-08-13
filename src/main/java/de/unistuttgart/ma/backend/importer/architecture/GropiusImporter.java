@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import de.unistuttgart.gropius.api.Query;
 import de.unistuttgart.gropius.api.QueryQuery;
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.Project;
@@ -17,7 +18,7 @@ import de.unistuttgart.gropius.Project;
  * @author maumau
  *
  */
-public class GropiusImporter implements ArchitectureImporter {
+public class GropiusImporter {
 
 	private final GropiusApiQuerier manager;
 	private final String projectName;
@@ -31,23 +32,24 @@ public class GropiusImporter implements ArchitectureImporter {
 		this.mapper = DataMapper.getMapper();
 	}
 
-	public Project parse() {
+	public Project parse() throws ModelCreationFailedException {
 		QueryQuery queryQuery = GropiusApiQueries.getSingleProjectQuery(projectName);
 		System.out.println(queryQuery.toString());
 		try {
 			Query query = manager.queryQuery(queryQuery);
 			return parse(query);
-		} catch (IOException | InterruptedException e) {
-			// TODO do better.
-			e.printStackTrace();
+		} catch (Exception e) { // just catch everything :x
+			throw new ModelCreationFailedException("could not parse project : " + e.getMessage(), e);			
 		}
-		throw new IllegalArgumentException("could not parse project");
 	}
 
-	private Project parse(Query response) {
+	private Project parse(Query response) throws ModelCreationFailedException {
 
-		if (response.getProjects().getNodes().size() != 1) {
-			throw new RuntimeException("queried for a single project but got multiple");
+		if (response.getProjects().getNodes().size() > 1) {
+			throw new ModelCreationFailedException("queried for a single project but got multiple", null);
+		}
+		if (response.getProjects().getNodes().size() < 1) {
+			throw new ModelCreationFailedException("queried for a single project but found none", null);
 		}
 
 		// add the projects

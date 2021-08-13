@@ -13,10 +13,9 @@ import org.springframework.stereotype.Component;
 
 import de.unistuttgart.gropius.Project;
 import de.unistuttgart.gropius.slo.SloRule;
-import de.unistuttgart.ma.backend.importer.architecture.ArchitectureImporter;
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.architecture.GropiusImporter;
 import de.unistuttgart.ma.backend.importer.process.BPMNImporter;
-import de.unistuttgart.ma.backend.importer.slo.SloImporter;
 import de.unistuttgart.ma.backend.importer.slo.SolomonImporter;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
@@ -49,11 +48,10 @@ public class SagaImporterService {
 		return systemRepoProxy.getIdForFilename(filename);
 	}
 
-	public String createModel(ImportRequest request) throws IOException {
+	public String createModel(ImportRequest request) throws IOException, ModelCreationFailedException {
 		// collect model elements with importers
 		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
 		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment());
-		java.lang.System.out.println(request.getBpmnUrl());
 		Process process = getProcess(request.getBpmnUrl());
 
 		// merge them
@@ -88,10 +86,10 @@ public class SagaImporterService {
 	 * @param url
 	 * @param env
 	 * @return a set of Slo rules.
+	 * @throws ModelCreationFailedException 
 	 */
-	protected Set<SloRule> getSloRules(String url, String env) {
-		SloImporter importer = new SolomonImporter(url, env);
-		return importer.parse();
+	protected Set<SloRule> getSloRules(String url, String env) throws ModelCreationFailedException {
+		return new SolomonImporter(url, env).parse();
 	}
 
 	/**
@@ -100,10 +98,10 @@ public class SagaImporterService {
 	 * @param url
 	 * @param projectId
 	 * @return components and their interfaces
+	 * @throws ModelCreationFailedException 
 	 */
-	protected Project getArchitecture(String url, String projectId) {
-		ArchitectureImporter importer = new GropiusImporter(url, projectId);
-		return importer.parse();
+	protected Project getArchitecture(String url, String projectId) throws ModelCreationFailedException {
+		return new GropiusImporter(url, projectId).parse();
 	}
 
 	/**
@@ -113,8 +111,7 @@ public class SagaImporterService {
 	 * @return a bpmn process
 	 */
 	protected Process getProcess(String url) {
-		BPMNImporter importer = new BPMNImporter(url);
-		return importer.parse();
+		return new BPMNImporter(url).parse();
 	}
 
 }

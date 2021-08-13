@@ -7,10 +7,11 @@ import java.util.Set;
 import com.shopify.graphql.support.ID;
 
 import de.unistuttgart.gropius.slo.SloRule;
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.architecture.DataMapper;
 import de.unistuttgart.gropius.slo.SloFactory;
 
-public class SolomonImporter implements SloImporter {
+public class SolomonImporter {
 	
 	private final DataMapper gropiusmapper;
 	
@@ -25,15 +26,12 @@ public class SolomonImporter implements SloImporter {
 		this.gropiusmapper = DataMapper.getMapper();
 	}
 	
-	@Override
-	public Set<SloRule> parse() {
+	public Set<SloRule> parse() throws ModelCreationFailedException {
 		try {
 			Set<SloFlatRule> slorules = querier.query(environmentParameter); 
 			return parse(slorules);
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException(e);
+		} catch (Exception e) {
+			throw new ModelCreationFailedException("Could not import slos : " + e.getMessage(), e);
 		}
 	}
 	

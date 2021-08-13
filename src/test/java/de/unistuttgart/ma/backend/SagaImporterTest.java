@@ -2,14 +2,11 @@ package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,19 +19,22 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
+import de.unistuttgart.ma.backend.rest.ImportRequest;
 import de.unistuttgart.ma.saga.System;
 
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest
 @ActiveProfiles("test")
-class LoadModelsTest extends TestWithRepoAndMockServers {
-	
+class SagaImporterTest extends TestWithRepoAndMockServers {
+
 	protected System loadSystem(String file) throws IOException {
-		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);					
-		
+		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);
+
 		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-		
-		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
+
+		// create new resource, other wise we wont load, but instead just reuse stuff
+		// from the previous parsing.
 		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
 		recource.load(inputStream, null);
 
@@ -65,7 +65,6 @@ class LoadModelsTest extends TestWithRepoAndMockServers {
 	@Test
 	void parseT2BaseSystemTest() throws IOException {
 		loadSystem();
-		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);
 		String filename = "t2-base.saga";
 
 		loadSystem("t2_base_saga.saga");
@@ -84,9 +83,45 @@ class LoadModelsTest extends TestWithRepoAndMockServers {
 	}
 
 	@Test
-	void creationTest() throws IOException, InterruptedException {
-		HttpClient httpClient = HttpClient.newBuilder().build();
-		
+	public void creationTest() throws ModelCreationFailedException, IOException {
+		long i = systemRepo.count();
 		importService.createModel(request);
+		assertEquals(i + 1, systemRepo.count());
+	}
+
+	@Test
+	public void creationTest_Fail_wrongGropiusUrl() throws IOException {
+		{
+			ImportRequest request = new ImportRequest(base + solomon, base + "foo",
+					"src/test/resources/t2Process.bpmn2", "t2-extended", "solomonEnvironment", "ressourceUri.saga");
+			assertThrows(ModelCreationFailedException.class, () -> {
+				importService.createModel(request);
+			});
+		}
+		{
+			ImportRequest request = new ImportRequest(base + solomon, "", "src/test/resources/t2Process.bpmn2",
+					"t2-extended", "solomonEnvironment", "ressourceUri.saga");
+			assertThrows(ModelCreationFailedException.class, () -> {
+				importService.createModel(request);
+			});
+		}
+	}
+	
+	@Test
+	public void creationTest_Fail_wrongSolomonUrl() throws IOException {
+		{
+			ImportRequest request = new ImportRequest(base + "foo", base + gropius, 
+					"src/test/resources/t2Process.bpmn2", "t2-extended", "solomonEnvironment", "ressourceUri.saga");
+			assertThrows(ModelCreationFailedException.class, () -> {
+				importService.createModel(request);
+			});
+		}
+		{
+			ImportRequest request = new ImportRequest("", base + gropius, "src/test/resources/t2Process.bpmn2",
+					"t2-extended", "solomonEnvironment", "ressourceUri.saga");
+			assertThrows(ModelCreationFailedException.class, () -> {
+				importService.createModel(request);
+			});
+		}
 	}
 }

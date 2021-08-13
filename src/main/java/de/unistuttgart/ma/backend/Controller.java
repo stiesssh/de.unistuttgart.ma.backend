@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.unistuttgart.ma.backend.exceptions.CouldNotSaveSystemModelException;
 import de.unistuttgart.ma.backend.exceptions.MissingSystemModelException;
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.SagaImporterService;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
@@ -46,14 +47,14 @@ public class Controller {
 		importService.updateModel(xml, systemId);
 	}
 	
-	@PostMapping("/api/foo")
-	public String createModel(@RequestBody ImportRequest request) throws CouldNotSaveSystemModelException {
+	@PostMapping("/api/model")
+	public String createModel(@RequestBody ImportRequest request) throws ModelCreationFailedException {
 		try {
 			return importService.createModel(request);
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw new ModelCreationFailedException("model creation failed : " + e.getMessage(), e);
 		}
-		throw new CouldNotSaveSystemModelException("import failed");
 	}
 
 	
@@ -62,9 +63,9 @@ public class Controller {
 		return "Greetings :)";
 	}
 
-	@ExceptionHandler(CouldNotSaveSystemModelException.class)
+	@ExceptionHandler(ModelCreationFailedException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public ResponseEntity<String> couldNotSaveSystemModelException(CouldNotSaveSystemModelException exception) {
+	public ResponseEntity<String> modelCreationFailedException(ModelCreationFailedException exception) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
 	}
 	

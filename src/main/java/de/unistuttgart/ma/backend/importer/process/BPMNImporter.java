@@ -38,27 +38,4 @@ public class BPMNImporter {
 		
 		return rval;
 	}
-	
-	/**
-	 * recursively parse flow elements. destroy all hierarchy.
-	 * 
-	 * @param flowelements
-	 * @param root
-	 */
-//	private void parseFlowElemets(List<FlowElement> flowelements, Process root) {
-//		for (FlowElement element : flowelements) {
-//			if (element instanceof org.eclipse.bpmn2.Activity) {
-//				org.eclipse.bpmn2.Activity task = (org.eclipse.bpmn2.Activity) element;
-//				
-//				Activity activity = new Activity(new Id(), task.getName(), root);
-//				root.addActivity(activity);
-//				
-//				if (element instanceof SubProcess) {
-//					SubProcess subprocess = (SubProcess) element;
-//					// destroy hierarchy :)
-//					parseFlowElemets(subprocess.getFlowElements(), root);	
-//				}
-//			}
-//		}
-//	}
 }
