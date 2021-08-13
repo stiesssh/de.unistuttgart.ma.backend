@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.unistuttgart.ma.saga.SagaFactory;
+import de.unistuttgart.ma.saga.SagaPackage;
 import de.unistuttgart.ma.saga.System;
 
 /**
@@ -48,6 +50,10 @@ public class SystemRepositoryProxy {
 		this.loadedSystems = new HashMap<>();
 		this.projectId2SystemId = new HashMap<>();
 		this.systemId2ResourceUri = new HashMap<>();
+
+		// org.eclipse.emf.ecore.xmi.PackageNotFoundException: Package with uri
+		// 'http://www.example.org/saga' not found
+		SagaPackage p = SagaPackage.eINSTANCE;
 
 		init();
 	}
@@ -108,17 +114,19 @@ public class SystemRepositoryProxy {
 
 		return item.getId();
 	}
-	
+
 	/**
 	 * update model by replacing its xml with another one.
 	 * 
-	 * @param xml the model as xml
+	 * @param xml      the model as xml
 	 * @param systemId id of the system in the model
 	 */
 	public void updateModel(String xml, String systemId) {
 		if (repository.existsById(systemId)) {
 			SystemItem item = repository.findById(systemId).get();
 			repository.save(new SystemItem(systemId, xml, item.getFilename()));
+		} else {
+			repository.save(new SystemItem(systemId, xml, systemId + ".saga"));
 		}
 	}
 

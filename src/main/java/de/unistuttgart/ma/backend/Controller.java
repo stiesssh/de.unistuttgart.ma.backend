@@ -41,7 +41,7 @@ public class Controller {
 	 * 
 	 * @param xml updated model as XML
 	 */
-	@PostMapping("/api/model/{filename}")
+	@PostMapping("/api/model/{systemId}")
 	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
 		importService.updateModel(xml, systemId);
 	}

@@ -52,8 +52,6 @@ public class CreateIssueService {
 
 	private final GropiusApiQuerier querier;
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-
 	public CreateIssueService(@Value("${gropius.url}") String uri) {
 		module = new SimpleModule();
 

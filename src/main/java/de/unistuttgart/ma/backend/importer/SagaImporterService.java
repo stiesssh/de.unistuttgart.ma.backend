@@ -1,19 +1,15 @@
 package de.unistuttgart.ma.backend.importer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 
 import org.eclipse.bpmn2.Process;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import de.unistuttgart.gropius.Project;
 import de.unistuttgart.gropius.slo.SloRule;
@@ -57,6 +53,7 @@ public class SagaImporterService {
 		// collect model elements with importers
 		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
 		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment());
+		java.lang.System.out.println(request.getBpmnUrl());
 		Process process = getProcess(request.getBpmnUrl());
 
 		// merge them

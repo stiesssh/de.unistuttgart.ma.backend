@@ -3,6 +3,8 @@ package de.unistuttgart.ma.backend;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -36,10 +38,12 @@ import de.unistuttgart.ma.impact.Violation;
  * the issue that the slo manager (solomon) supposedly created for the initial
  * slo violation.
  * 
- * TODO : the location of the created issues is faked, because belong to they
- * dont belong to any component or interface of the architecture but to the
- * overlying process. and there is no process in gropius.
- * TODO : ask sandro, where to place the issues. 
+ * TODO : currently, gropius can only attach issues to components of interface.
+ * however the hereby calculated impact is on the business process. until there
+ * is an option to attach an issue to the entire project of gropius, all issues
+ * will be attached to the root cause component, even though that is not
+ * practicable, as it implies that the user already knows the root cause to look
+ * up the issue.
  * 
  * @author maumau
  *
@@ -50,16 +54,14 @@ public class AlertController {
 	private final NotificationCreationService service;
 	private final CreateIssueService issueService;
 	private final SystemRepositoryProxy systemRepoProxy;
-	
-	// TODO unfake
-	private final String fakeIssueLocation;
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public AlertController(@Autowired NotificationCreationService service,
-			@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired CreateIssueService issueService, @Value("${fakeIssueLocation}") String fakeIssueLocation) {
+			@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired CreateIssueService issueService) {
 		this.service = service;
 		this.systemRepoProxy = systemRepoProxy;
 		this.issueService = issueService;
-		this.fakeIssueLocation = fakeIssueLocation;
 	}
 
 	/**
@@ -72,6 +74,9 @@ public class AlertController {
 	@PostMapping("/api/alert")
 	public void receiveAlert(@RequestBody Alert alert)
 			throws IssueCreationFailedException, IssueLinkageFailedException {
+
+		logger.info(String.format("receive alert for %s", alert.getSloName()));
+
 		String sloId = alert.getSloId();
 		String archId = alert.getGropiusProjectId();
 		ID relatedIssueId = new ID(alert.getIssueId());
@@ -85,14 +90,15 @@ public class AlertController {
 		v.setThreshold(alert.getActualValue());
 
 		Set<Notification> notes = service.calculateImpacts(v);
+		logger.info(String.format("calculated %d impacts", notes.size()));
 
 		for (Notification notification : notes) {
 			// IssueLocation location = notification.getTopLevelImpact().getLocation(); //
 			// in theory.
-			// TODO : unfake!!
-			IssueLocation location = GropiusFactory.eINSTANCE.createComponent();
-			location.setId(fakeIssueLocation);
-			ID issueId = issueService.createIssue(notification, location);
+			
+			
+			ID issueId = issueService.createIssue(notification, rule.getGropiusComponentInterface());
+			logger.info(String.format("create issue for %s", alert.getSloName()));
 			issueService.linkIssue(issueId, relatedIssueId);
 		}
 	}
