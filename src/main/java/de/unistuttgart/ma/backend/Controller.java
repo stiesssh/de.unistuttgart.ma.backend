@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.unistuttgart.ma.backend.exceptions.CouldNotSaveSystemModelException;
 import de.unistuttgart.ma.backend.exceptions.MissingSystemModelException;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.SagaImporterService;

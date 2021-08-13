@@ -1,6 +1,5 @@
 package de.unistuttgart.ma.backend.importer.slo;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,8 +42,12 @@ public class SolomonImporter {
 			
 			rule.setId(flatRule.getId());
 			rule.setName(flatRule.getName());
-			rule.setPeriod(0);		//TODO
-			rule.setThreshold(0);	//TODO
+			rule.setPeriod(flatRule.getPeriod());
+			rule.setThreshold(flatRule.getThreshold());
+
+			rule.setPresetOption(flatRule.getPresetOption().toString());
+			rule.setStatisticsOption(flatRule.getStatisticsOption().toString());
+			rule.setComparisonOperator(flatRule.getComparisonOperator().toString());
 			
 			rule.setGropiusProject(gropiusmapper.getProjectByID(new ID(flatRule.getGropiusProjectId())));
 			rule.setGropiusComponent(gropiusmapper.getComponentByID(new ID(flatRule.getGropiusComponentId())));

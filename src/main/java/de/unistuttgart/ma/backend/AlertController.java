@@ -6,7 +6,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopify.graphql.support.ID;
 
-import de.unistuttgart.gropius.GropiusFactory;
-import de.unistuttgart.gropius.IssueLocation;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
@@ -88,6 +85,7 @@ public class AlertController {
 		v.setViolatedRule(rule);
 		v.setPeriod(alert.getActualPeriod());
 		v.setThreshold(alert.getActualValue());
+		v.setStartTime(alert.getAlertTime());
 
 		Set<Notification> notes = service.calculateImpacts(v);
 		logger.info(String.format("calculated %d impacts", notes.size()));

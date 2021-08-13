@@ -1,6 +1,7 @@
 package de.unistuttgart.ma.backend.importer.architecture;
 
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.unistuttgart.gropius.api.Query;
 import de.unistuttgart.gropius.api.QueryQuery;
@@ -24,6 +25,8 @@ public class GropiusImporter {
 	private final String projectName;
 
 	private final DataMapper mapper;
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public GropiusImporter(String uri, String projectName) {
 		super();
@@ -34,7 +37,7 @@ public class GropiusImporter {
 
 	public Project parse() throws ModelCreationFailedException {
 		QueryQuery queryQuery = GropiusApiQueries.getSingleProjectQuery(projectName);
-		System.out.println(queryQuery.toString());
+		logger.debug(String.format("Query for %s.",queryQuery.toString()));
 		try {
 			Query query = manager.queryQuery(queryQuery);
 			return parse(query);
@@ -51,6 +54,7 @@ public class GropiusImporter {
 		if (response.getProjects().getNodes().size() < 1) {
 			throw new ModelCreationFailedException("queried for a single project but found none", null);
 		}
+		logger.debug(String.format("Received 1 project from gropius backend."));
 
 		// add the projects
 		de.unistuttgart.gropius.api.Project gropiusProject = response.getProjects().getNodes().get(0);
@@ -78,6 +82,7 @@ public class GropiusImporter {
 			}
 		}
 
+		logger.debug(String.format("Parsed one project with id %s.",project.getId()));
 		return project;
 	}
 }

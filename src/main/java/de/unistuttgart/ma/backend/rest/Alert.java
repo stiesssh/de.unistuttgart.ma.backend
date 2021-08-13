@@ -1,9 +1,11 @@
 package de.unistuttgart.ma.backend.rest;
 
+import java.time.LocalDateTime;
+
 public class Alert {
 	public Alert() {}
 	
-	public Alert(String gropiusProjectId, double actualValue, double actualPeriod, String sloId, String sloName, String issueId) {
+	public Alert(String gropiusProjectId, double actualValue, double actualPeriod, String sloId, String sloName, String issueId, LocalDateTime alertTime) {
 		super();
 		this.gropiusProjectId = gropiusProjectId;
 		this.actualValue = actualValue;
@@ -11,12 +13,13 @@ public class Alert {
 		this.sloId = sloId;
 		this.sloName = sloName;
 		this.issueId = issueId;
+		this.alertTime = alertTime;
 	}
 	double actualValue;
 	double actualPeriod;
     String alertName;
     String alertDescription;
-    String alertTime;
+    LocalDateTime alertTime;
     String sloId;
     String sloName;
     String triggeringTargetName;
@@ -30,7 +33,7 @@ public class Alert {
 	public String getAlertDescription() {
 		return alertDescription;
 	}
-	public String getAlertTime() {
+	public LocalDateTime getAlertTime() {
 		return alertTime;
 	}
 	public String getSloId() {

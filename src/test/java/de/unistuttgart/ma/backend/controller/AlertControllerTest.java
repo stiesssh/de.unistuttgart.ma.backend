@@ -1,6 +1,7 @@
 package de.unistuttgart.ma.backend.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,9 @@ public class AlertControllerTest extends TestWithRepoAndMockServers{
 		service = new CreateIssueService(uri);
 		controller = new AlertController(computationService, systemRepoProxy, service);
 		
-		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo", "5ecd5d74e135b005");
+		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo", "5ecd5d74e135b005", LocalDateTime.now());
+		
+		
 	}
 	
 	@Test 

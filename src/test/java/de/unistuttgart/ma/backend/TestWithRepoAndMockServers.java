@@ -25,7 +25,9 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQueries;
 import de.unistuttgart.ma.backend.importer.slo.SloFlatRule;
-import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.PresetOptions;
+import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.ComparisonOperator;
+import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.PresetOption;
+import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.StatisticsOption;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 public abstract class TestWithRepoAndMockServers extends TestWithRepo {
@@ -122,20 +124,22 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	public List<SloFlatRule> getRules() {
 		List<SloFlatRule> rules = new ArrayList<>();
 
-		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005", PresetOptions.RESPONSE_TIME));
+		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005", PresetOption.RESPONSE_TIME));
 		rules.add(makeRules("anotherIface_respT_slo", "5e9453065b4a7002", "5e94553f2a4a7006",
-				PresetOptions.RESPONSE_TIME));
-		rules.add(makeRules("CI_respT_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOptions.RESPONSE_TIME));
+				PresetOption.RESPONSE_TIME));
+		rules.add(makeRules("CI_respT_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOption.RESPONSE_TIME));
 
-		rules.add(makeRules("CI_avail_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOptions.AVAILABILITY));
-		rules.add(makeRules("payment_avail_slo", "5e8cf6d4fe05a01f", "5e8cf760d345a028", PresetOptions.AVAILABILITY));
+		rules.add(makeRules("CI_avail_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOption.AVAILABILITY));
+		rules.add(makeRules("payment_avail_slo", "5e8cf6d4fe05a01f", "5e8cf760d345a028", PresetOption.AVAILABILITY));
 
 		return rules;
 	}
 
-	private SloFlatRule makeRules(String name, String componentId, String InterfaceId, PresetOptions preset) {
-		SloFlatRule rule = new SloFlatRule("5e8cc17ed645a00c", componentId, InterfaceId, name, name, name);
-		rule.setPresetOptions(preset);
+	private SloFlatRule makeRules(String name, String componentId, String InterfaceId, PresetOption preset) {
+		SloFlatRule rule = new SloFlatRule("5e8cc17ed645a00c", componentId, InterfaceId, name, 0.5, 10);
+		rule.setPresetOption(preset);
+		rule.setComparisonOperator(ComparisonOperator.EQUAL);
+		rule.setStatisticsOption(StatisticsOption.AVG);
 		return rule;
 	}
 
