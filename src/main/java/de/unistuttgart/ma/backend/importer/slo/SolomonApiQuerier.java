@@ -23,7 +23,7 @@ public class SolomonApiQuerier {
 		this.httpClient = HttpClient.newBuilder().build();
 	}
 
-	public Set<SloFlatRule> query(String queryString ) throws IOException, InterruptedException {		
+	public Set<FlatSloRule> query(String queryString ) throws IOException, InterruptedException {		
 		
 		URI requestUri = URI.create(apiUri.toString() + queryString);
 		
@@ -36,7 +36,7 @@ public class SolomonApiQuerier {
 		
 		String body = response.body();
 		
-		Set<SloFlatRule> rules = gsonInstance.fromJson(body, new TypeToken<Set<SloFlatRule>>(){}.getType());
+		Set<FlatSloRule> rules = gsonInstance.fromJson(body, new TypeToken<Set<FlatSloRule>>(){}.getType());
 		
 		return rules;
 	}

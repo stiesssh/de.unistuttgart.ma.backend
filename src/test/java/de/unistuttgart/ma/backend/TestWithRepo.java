@@ -46,10 +46,10 @@ public abstract class TestWithRepo {
 	protected Controller controller;
 	
 	protected SystemRepositoryProxy systemRepoProxy;
-	@Autowired SystemRepository systemRepo;
+	@Autowired protected SystemRepository systemRepo;
 	
 	protected ImpactRepositoryProxy notificationRepoProxy;
-	@Autowired ImpactRepository notificationRepo;
+	@Autowired protected ImpactRepository notificationRepo;
 	
 
 	protected de.unistuttgart.ma.saga.System system; 

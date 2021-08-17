@@ -27,16 +27,16 @@ public class SolomonImporter {
 	
 	public Set<SloRule> parse() throws ModelCreationFailedException {
 		try {
-			Set<SloFlatRule> slorules = querier.query(environmentParameter); 
+			Set<FlatSloRule> slorules = querier.query(environmentParameter); 
 			return parse(slorules);
 		} catch (Exception e) {
 			throw new ModelCreationFailedException("Could not import slos : " + e.getMessage(), e);
 		}
 	}
 	
-	private Set<SloRule> parse(Set<SloFlatRule> flatRules) {
+	private Set<SloRule> parse(Set<FlatSloRule> flatRules) {
 		Set<SloRule> rules = new HashSet<>();
-		for (SloFlatRule flatRule : flatRules) {
+		for (FlatSloRule flatRule : flatRules) {
 			
 			SloRule rule = SloFactory.eINSTANCE.createSloRule(); 
 			

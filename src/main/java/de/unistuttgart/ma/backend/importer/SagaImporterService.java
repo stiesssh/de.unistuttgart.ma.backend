@@ -52,7 +52,7 @@ public class SagaImporterService {
 		// collect model elements with importers
 		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
 		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment());
-		Process process = getProcess(request.getBpmnUrl());
+		Process process = getProcess(request.getBpmn());
 
 		// merge them
 		System system = SagaFactory.eINSTANCE.createSystem();
@@ -110,8 +110,8 @@ public class SagaImporterService {
 	 * @param url
 	 * @return a bpmn process
 	 */
-	protected Process getProcess(String url) {
-		return new BPMNImporter(url).parse();
+	protected Process getProcess(String bpmn) throws ModelCreationFailedException {
+		return new BPMNImporter(bpmn).parse();
 	}
 
 }

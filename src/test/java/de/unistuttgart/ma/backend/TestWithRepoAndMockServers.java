@@ -9,14 +9,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -24,10 +29,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQueries;
-import de.unistuttgart.ma.backend.importer.slo.SloFlatRule;
-import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.ComparisonOperator;
-import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.PresetOption;
-import de.unistuttgart.ma.backend.importer.slo.SloFlatRule.StatisticsOption;
+import de.unistuttgart.ma.backend.importer.slo.FlatSloRule;
+import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.ComparisonOperator;
+import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.PresetOption;
+import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.StatisticsOption;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 public abstract class TestWithRepoAndMockServers extends TestWithRepo {
@@ -35,13 +40,18 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	static WireMockServer server;
 	protected  static int port;
 
-	String base;
+	protected String base;
+	protected String bpmn;
 
 	protected String solomon = "/solomonUrl/";
 	protected String gropius = "/gropiusUrl/api";
 
+	protected String solomonEnvironment = "solomonEnvironment";
+	
 	ImportRequest request;
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	@Override
 	@BeforeEach
 	public void setUp() {
@@ -54,8 +64,18 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 			/* No OPS */ }
 
 		base = "http://localhost:" + port;
-		request = new ImportRequest(base + solomon, base + gropius, "src/test/resources/t2Process.bpmn2", "t2-extended",
-				"solomonEnvironment", "ressourceUri.saga");
+		
+		File file = new File("src/test/resources/t2Process.bpmn2");
+		try {
+			bpmn = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			logger.info("reading process from file failed");
+		}
+
+		
+		request = new ImportRequest(base + solomon, base + gropius, "t2-extended",
+				solomonEnvironment, "ressourceUri.saga", bpmn);
 
 		server = new WireMockServer(port);
 		server.start();
@@ -121,8 +141,8 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	// HELPERS
 	//
 
-	public List<SloFlatRule> getRules() {
-		List<SloFlatRule> rules = new ArrayList<>();
+	public List<FlatSloRule> getRules() {
+		List<FlatSloRule> rules = new ArrayList<>();
 
 		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005", PresetOption.RESPONSE_TIME));
 		rules.add(makeRules("anotherIface_respT_slo", "5e9453065b4a7002", "5e94553f2a4a7006",
@@ -135,8 +155,8 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 		return rules;
 	}
 
-	private SloFlatRule makeRules(String name, String componentId, String InterfaceId, PresetOption preset) {
-		SloFlatRule rule = new SloFlatRule("5e8cc17ed645a00c", componentId, InterfaceId, name, 0.5, 10);
+	private FlatSloRule makeRules(String name, String componentId, String InterfaceId, PresetOption preset) {
+		FlatSloRule rule = new FlatSloRule("5e8cc17ed645a00c", componentId, InterfaceId, name, 0.5, 10);
 		rule.setPresetOption(preset);
 		rule.setComparisonOperator(ComparisonOperator.EQUAL);
 		rule.setStatisticsOption(StatisticsOption.AVG);
