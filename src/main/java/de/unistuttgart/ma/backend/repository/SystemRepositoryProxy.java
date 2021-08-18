@@ -70,6 +70,7 @@ public class SystemRepositoryProxy {
 				System system = deserializeSystem(item.getContent(), item.getFilename());
 				projectId2SystemId.put(system.getArchitecture().getId(), system.getId());
 				systemId2ResourceUri.put(system.getId(), item.getFilename());
+				logger.info(String.format("load model %s for architecture %s.", system.getId(), system.getArchitecture().getId()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

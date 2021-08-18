@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -20,6 +23,7 @@ import de.unistuttgart.gropius.Project;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.saga.SagaFactory;
 import de.unistuttgart.ma.saga.System;
+import de.unistuttgart.ma.backend.repository.ImpactItem;
 import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.Violation;
 
@@ -38,32 +42,32 @@ import de.unistuttgart.ma.impact.Violation;
 @ActiveProfiles("test")
 public class RepositoryTest extends TestWithRepo {
 	
-//	@Test
-//	public void impactRepoProxyTest() throws IOException {
-//		loadSystem();
-//
-//		Notification impact = createImpactChain();
-//
-//		// save
-//		notificationRepoProxy.save(impact, systemId);		
-//		assertEquals(1, notificationRepo.count());		
-//		
-//		// load
-//		Set<Impact> impacts = notificationRepoProxy.findBySystemId(systemId);
-//		
-//		// asserts
-//		assertNotNull(impacts);
-//		assertEquals(1, impacts.size());
-//		
-//		Impact actual = impacts.iterator().next();
-//		
-//		assertNotNull(actual);
-//		assertEquals(impact.getLocationId(), actual.getLocationId());
-//		assertEquals(impact.getLocation(), actual.getLocation());
-//		assertTrue(actual.getCause()instanceof Violation);
-//		assertEquals(((Violation) impact.getCause()).getViolatedRule(), ((Violation) actual.getCause()).getViolatedRule());
-//	}
-//	
+	@Test
+	public void impactRepoProxyTest() throws IOException {
+		loadSystem();
+
+		Notification impact = createImpactChain();
+		
+		Impact impact1 = impact.getTopLevelImpact();
+		Impact impact2 = impact1.getCause();
+
+		ImpactItem ii1 = impactRepo.save(new ImpactItem(impact1));
+		ImpactItem ii2 = impactRepo.save(new ImpactItem(impact2));
+		
+		
+		// assert
+		assertEquals(2, impactRepo.count());
+		
+		assertTrue(impactRepo.findById(ii1.getId()).isPresent());
+		assertTrue(impactRepo.findById(ii2.getId()).isPresent());
+		ImpactItem actual1 = impactRepo.findById(ii1.getId()).get();
+		ImpactItem actual2 = impactRepo.findById(ii2.getId()).get();
+		
+		assertEquals(null, actual2.getCause());
+		assertEquals(impact2.getId(), actual1.getCause());
+		
+	}
+	
 	@Test
 	public void systemRepoProxyTest() throws IOException {	
 		loadSystem();

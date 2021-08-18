@@ -26,7 +26,6 @@ import de.unistuttgart.gropius.Issue;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.importer.SagaImporterService;
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
-import de.unistuttgart.ma.backend.repository.ImpactRepositoryProxy;
 import de.unistuttgart.ma.backend.repository.SystemRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.impact.Impact;
@@ -41,15 +40,13 @@ import de.unistuttgart.ma.saga.System;
 public abstract class TestWithRepo {
 	
 	protected NotificationCreationService computationService;
-	protected NotificationRetrievalService retrievalService;
 	protected SagaImporterService importService;
 	protected Controller controller;
 	
 	protected SystemRepositoryProxy systemRepoProxy;
 	@Autowired protected SystemRepository systemRepo;
 	
-	protected ImpactRepositoryProxy notificationRepoProxy;
-	@Autowired protected ImpactRepository notificationRepo;
+	@Autowired protected ImpactRepository impactRepo;
 	
 
 	protected de.unistuttgart.ma.saga.System system; 
@@ -63,14 +60,12 @@ public abstract class TestWithRepo {
 		set = new ResourceSetImpl();
 		
 		systemRepoProxy = new SystemRepositoryProxy(systemRepo, set);
-		notificationRepoProxy = new ImpactRepositoryProxy(notificationRepo, set);
 		
 		importService = new SagaImporterService(systemRepoProxy, set);
-		retrievalService = new NotificationRetrievalService(notificationRepoProxy, set);
-		computationService = new NotificationCreationService(notificationRepoProxy, systemRepoProxy);
+		computationService = new NotificationCreationService(systemRepoProxy, impactRepo);
 		
 		systemRepo.deleteAll();
-		notificationRepo.deleteAll();
+		impactRepo.deleteAll();
 	}
 	
 	
@@ -99,14 +94,6 @@ public abstract class TestWithRepo {
 				
 		assertEquals(size + 1, systemRepo.count());
 	}
-	
-	public void loadImpact() {
-//		long size = notificationRepo.count();
-//		Notification note = createImpactChain();
-//		notificationRepoProxy.save(note, systemId);
-//		assertEquals(size + 1, notificationRepo.count());
-	}
-	
 	
 	public Notification createImpactChain() {
 		// create 

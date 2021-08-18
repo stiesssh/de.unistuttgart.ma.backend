@@ -20,19 +20,16 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 /**
  * This controller provides the endpoints to be called by the sirius front end.
- *  
+ * 
  * @author maumau
  *
  */
 @RestController
 public class Controller {
 
-	
-	private final NotificationRetrievalService service;
-	private final SagaImporterService importService;	
+	private final SagaImporterService importService;
 
-	public Controller(@Autowired NotificationRetrievalService service, @Autowired SagaImporterService importService) {
-		this.service = service;
+	public Controller(@Autowired SagaImporterService importService) {
 		this.importService = importService;
 	}
 
@@ -45,7 +42,7 @@ public class Controller {
 	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
 		importService.updateModel(xml, systemId);
 	}
-	
+
 	@PostMapping("/api/model")
 	public String createModel(@RequestBody ImportRequest request) throws ModelCreationFailedException {
 		try {
@@ -56,7 +53,11 @@ public class Controller {
 		}
 	}
 
-	
+	@GetMapping("/api/model/{systemId}")
+	public String getModel(@PathVariable String systemId) throws ModelCreationFailedException {
+		return importService.getModel(systemId);
+	}
+
 	@GetMapping("/")
 	public String index() {
 		return "Greetings :)";
@@ -67,7 +68,7 @@ public class Controller {
 	public ResponseEntity<String> modelCreationFailedException(ModelCreationFailedException exception) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
 	}
-	
+
 	@ExceptionHandler(MissingSystemModelException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<String> missingSystemModelException(MissingSystemModelException exception) {

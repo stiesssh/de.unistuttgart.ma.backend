@@ -6,12 +6,14 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.ma.backend.computationUtility.QueueItem;
-import de.unistuttgart.ma.backend.repository.ImpactRepositoryProxy;
+import de.unistuttgart.ma.backend.repository.ImpactItem;
+import de.unistuttgart.ma.backend.repository.ImpactRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.saga.Saga;
 import de.unistuttgart.ma.saga.SagaStep;
@@ -30,13 +32,12 @@ import de.unistuttgart.ma.impact.Violation;
 @org.springframework.stereotype.Component
 public class NotificationCreationService {
 
-	private final ImpactRepositoryProxy notificationRepoProxy;
 	private final SystemRepositoryProxy systemRepoProxy;
-
-	public NotificationCreationService(@Autowired ImpactRepositoryProxy notificationRepoProxy,
-			@Autowired SystemRepositoryProxy systemRepoProxy) {
-		this.notificationRepoProxy = notificationRepoProxy;
+	private final ImpactRepository impactRepo;
+	
+	public NotificationCreationService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ImpactRepository impactRepo) {
 		this.systemRepoProxy = systemRepoProxy;
+		this.impactRepo = impactRepo;
 	}
 
 	/**
@@ -66,11 +67,7 @@ public class NotificationCreationService {
 			ComponentInterface current = currentItem.getLocationAsFace();
 
 			// always cause new impact at current
-			Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
-			causedImpact.setCause(currentItem.getCause());
-			causedImpact.setLocation(current);
-			//causedImpact.setId(); // TODO 
-			
+			Impact causedImpact = makeImpact(currentItem.getCause(), current); 
 
 			Set<SagaStep> nextSteps = getNextLevel(current, system);
 			if (nextSteps.isEmpty()) {
@@ -95,15 +92,9 @@ public class NotificationCreationService {
 			SagaStep current = currentItem.getLocationAsStep();
 
 			// always cause new impact at current
-			Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
-
-			causedImpact.setLocation(current);
-			causedImpact.setCause(currentItem.getCause());
+			Impact causedImpact = makeImpact(currentItem.getCause(), current);
 			
-
-			Impact topLevelImpact = ImpactFactory.eINSTANCE.createImpact();
-			topLevelImpact.setLocation(current.getTask());
-			topLevelImpact.setCause(causedImpact);
+			Impact topLevelImpact = makeImpact(causedImpact, current.getTask());
 
 			//notificationRepoProxy.save(topLevelImpact, system.getId());
 			Notification note = ImpactFactory.eINSTANCE.createNotification();
@@ -157,9 +148,7 @@ public class NotificationCreationService {
 			Set<Component> impactedComponents = new HashSet<>();
 			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
 			
-			Impact initialImpact = ImpactFactory.eINSTANCE.createImpact();
-			initialImpact.setCause(null);
-			initialImpact.setLocation(violation.getViolatedRule().getGropiusComponentInterface());
+			Impact initialImpact = makeImpact(null, violation.getViolatedRule().getGropiusComponentInterface());
 			
 			for (Component c : impactedComponents) {
 				for (ComponentInterface face : c.getInterfaces()) {
@@ -171,9 +160,7 @@ public class NotificationCreationService {
 		} else if (violation.getViolatedRule().getGropiusComponent() != null) {
 			EList<ComponentInterface> faces = violation.getViolatedRule().getGropiusComponent().getInterfaces();
 			for (ComponentInterface componentInterface : faces) {
-				Impact initialImpact = ImpactFactory.eINSTANCE.createImpact();
-				initialImpact.setCause(null);
-				initialImpact.setLocation(componentInterface);
+				Impact initialImpact = makeImpact(null, componentInterface);
 				
 				for (Component c : componentInterface.getConsumedBy()) {
 					for (ComponentInterface face : c.getInterfaces()) {
@@ -185,9 +172,18 @@ public class NotificationCreationService {
 			throw new IllegalArgumentException("the given violation does not have a location");
 		}
 
-		
-		
-
 		return initialItems;
+	}
+	
+	private Impact makeImpact(Impact cause, EObject location) {
+		Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
+		causedImpact.setCause(cause);
+		causedImpact.setLocation(location);
+		
+		ImpactItem item = impactRepo.save(new ImpactItem(causedImpact));
+		
+		causedImpact.setId(item.getId());
+		
+		return causedImpact;
 	}
 }

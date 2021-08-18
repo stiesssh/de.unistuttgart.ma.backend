@@ -13,13 +13,13 @@ import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.rest.Alert;
 
-public class AlertControllerTest extends TestWithRepoAndMockServers{
-	
-	String uri; 
+public class AlertControllerTest extends TestWithRepoAndMockServers {
+
+	String uri;
 	CreateIssueService service;
-	
+
 	AlertController controller;
-	
+
 	Alert alert;
 
 	@BeforeEach
@@ -29,18 +29,17 @@ public class AlertControllerTest extends TestWithRepoAndMockServers{
 		uri = "http://localhost:" + port + gropius;
 		service = new CreateIssueService(uri);
 		controller = new AlertController(computationService, systemRepoProxy, service);
-		
-		alert = new Alert("5e8cc17ed645a00c", 1.0, 2.0, "CI_avail_slo", "CI_avail_slo", "5ecd5d74e135b005", LocalDateTime.now());
-		
-		
+
+		alert = new Alert(0.0, 0.0, "CI_avail_slo", "CI_avail_slo", LocalDateTime.now(), "CI_avail_slo", "CI_avail_slo",
+				"trigger", gropiusId, "todo_compid", "todo_linkedissueid");
+
 	}
-	
-	@Test 
-	public void test() throws IOException, IssueCreationFailedException, IssueLinkageFailedException{
+
+	@Test
+	public void test() throws IOException, IssueCreationFailedException, IssueLinkageFailedException {
 		loadSystem();
 		controller.receiveAlert(alert);
 		verifyGropiusIssue(4); // 2 creations, 2 linkages
 	}
-	
 
 }

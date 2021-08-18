@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
-import de.unistuttgart.ma.backend.repository.NotificationRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepository;
 
 @Configuration

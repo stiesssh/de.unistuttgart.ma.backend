@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.slo.SloRule;
+import de.unistuttgart.ma.backend.repository.ImpactItem;
 import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.ImpactFactory;
 import de.unistuttgart.ma.impact.Notification;
@@ -43,9 +44,10 @@ public class ImpactComputationTest extends TestWithRepo{
 		
 		Set<Notification> actuals = computationService.calculateImpacts(violation);
 		
-		//Set<Impact> actuals = notificationRepoProxy.findBySystemId(systemId);
 		assertNotNull(actuals);
 		assertEquals(2, actuals.size());
+		
+		assertEquals(12, impactRepo.count()); // because all impacts.. not only those below top levels 
 		
 		for (Notification actual : actuals) {
 			assertNotNull(actual);
@@ -100,17 +102,22 @@ public class ImpactComputationTest extends TestWithRepo{
 		assertImpact(current, "5e8cf780c585a029", true);
 	}
 	
-	private void assertImpact(Impact impact, String id, boolean last) {
+	private void assertImpact(Impact impact, String locationId, boolean last) {
 		assertNotNull(impact);
+		assertTrue(impactRepo.existsById(impact.getId()));
+		
+		ImpactItem item = impactRepo.findById(impact.getId()).get();
+		assertEquals(locationId, item.getLocation());
+		
 		EObject location = impact.getLocation();
 		if (location instanceof ComponentInterface) {
-			assertEquals(id, ((ComponentInterface) location).getId());
+			assertEquals(locationId, ((ComponentInterface) location).getId());
 		}
 		if (location instanceof FlowElement) {
-			assertEquals(id, ((FlowElement) location).getId());
+			assertEquals(locationId, ((FlowElement) location).getId());
 		}
 		if (location instanceof SagaStep) {
-			assertEquals(id, ((SagaStep) location).getId());
+			assertEquals(locationId, ((SagaStep) location).getId());
 		}
 		if (!last) {
 			assertNotNull(impact.getCause());

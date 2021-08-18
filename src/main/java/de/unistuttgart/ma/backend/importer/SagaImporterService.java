@@ -47,6 +47,10 @@ public class SagaImporterService {
 	public String getIdForSystemModel(String filename) {
 		return systemRepoProxy.getIdForFilename(filename);
 	}
+	
+	public String getModel(String systemId) {
+		return systemRepoProxy.findXMLById(systemId);
+	}
 
 	public String createModel(ImportRequest request) throws IOException, ModelCreationFailedException {
 		// collect model elements with importers

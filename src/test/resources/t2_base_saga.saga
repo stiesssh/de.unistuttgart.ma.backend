@@ -67,9 +67,9 @@
       <interfaces id="5e94539417ca7005" name="otherCompIface" consumedBy="//@architecture/@components.1 //@architecture/@components.8"/>
     </components>
   </architecture>
-  <sloRules name="payment_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.6" gropiusComponentInterface="//@architecture/@components.6/@interfaces.0"/>
-  <sloRules name="anotherIface_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.8" gropiusComponentInterface="//@architecture/@components.8/@interfaces.0"/>
-  <sloRules name="CI_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
-  <sloRules name="other_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.9" gropiusComponentInterface="//@architecture/@components.9/@interfaces.0"/>
-  <sloRules name="CI_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <sloRules name="payment_avail_slo" id="payment_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.6" gropiusComponentInterface="//@architecture/@components.6/@interfaces.0"/>
+  <sloRules name="anotherIface_respT_slo" id="anotherIface_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.8" gropiusComponentInterface="//@architecture/@components.8/@interfaces.0"/>
+  <sloRules name="CI_respT_slo" id="CI_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <sloRules name="other_respT_slo" id="other_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.9" gropiusComponentInterface="//@architecture/@components.9/@interfaces.0"/>
+  <sloRules name="CI_avail_slo" id="CI_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
 </saga:System>

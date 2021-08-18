@@ -1,6 +1,7 @@
 package de.unistuttgart.ma.backend;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
@@ -51,6 +52,8 @@ public class CreateIssueService {
 	private final SimpleModule module;
 
 	private final GropiusApiQuerier querier;
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public CreateIssueService(@Value("${gropius.url}") String uri) {
 		module = new SimpleModule();
@@ -83,7 +86,11 @@ public class CreateIssueService {
 
 		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
 		
-		return querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
+		ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
+		
+		logger.info(String.format("Create Issue with ID %s", id.toString()));
+		
+		return id;
 	}
 
 	/**
@@ -138,6 +145,7 @@ public class CreateIssueService {
 	 */
 	protected String createTitle(Notification topLevelImpact) {
 		StringBuilder sb = new StringBuilder();
+		sb.append("[ ").append(Instant.now().toString()).append(" ]");
 		sb.append("Impact on ").append(getLocationName(topLevelImpact.getTopLevelImpact()))
 				.append(" caused by Violation of ");
 		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName());

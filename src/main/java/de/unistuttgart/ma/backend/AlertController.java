@@ -79,7 +79,7 @@ public class AlertController {
 		ID relatedIssueId = new ID(alert.getIssueId());
 
 		System system = systemRepoProxy.findByArchitectureId(archId);
-		SloRule rule = system.getSloRules().stream().filter(s -> s.getName().equals(sloId)).findFirst().get();
+		SloRule rule = system.getSloById(sloId);
 
 		Violation v = ImpactFactory.eINSTANCE.createViolation();
 		v.setViolatedRule(rule);
@@ -95,7 +95,7 @@ public class AlertController {
 			// in theory.
 			
 			
-			ID issueId = issueService.createIssue(notification, rule.getGropiusComponentInterface());
+			ID issueId = issueService.createIssue(notification, rule.getGropiusComponent());
 			logger.info(String.format("create issue for %s", alert.getSloName()));
 			issueService.linkIssue(issueId, relatedIssueId);
 		}
