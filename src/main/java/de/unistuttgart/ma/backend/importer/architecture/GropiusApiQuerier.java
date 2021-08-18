@@ -13,8 +13,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

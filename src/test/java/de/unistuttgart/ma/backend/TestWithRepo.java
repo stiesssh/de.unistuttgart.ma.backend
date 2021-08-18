@@ -8,7 +8,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
+import org.eclipse.bpmn2.FlowElement;
+import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -99,6 +102,7 @@ public abstract class TestWithRepo {
 		// create 
 		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029");
 		ComponentInterface paymentFace = system.getComponentInterfaceById("5e8cf760d345a028");
+		FlowElement task = system.getTaskById("Task_4");
 		SloRule rule = system.getSloForNode(creditInstituteFace).iterator().next();
 	
 		
@@ -111,17 +115,22 @@ public abstract class TestWithRepo {
 		Impact impact2 = ImpactFactory.eINSTANCE.createImpact();
 		impact2.setLocation(paymentFace);
 		impact2.setId("impact-pay");
+		Impact impact3 = ImpactFactory.eINSTANCE.createImpact();
+		impact3.setLocation(task);
+		impact3.setId("impact-pay");
 		
 		impact2.setCause(impact1);
+		impact3.setCause(impact2);
 
 		Violation violation = ImpactFactory.eINSTANCE.createViolation();
 		violation.setViolatedRule(rule);
 		violation.setIssue(issue);
 		violation.setPeriod(0.0);
 		violation.setThreshold(0.0);
+		violation.setStartTime(LocalDateTime.now());
 		
 		Notification note = ImpactFactory.eINSTANCE.createNotification();
-		note.setTopLevelImpact(impact2);
+		note.setTopLevelImpact(impact3);
 		note.setRootCause(violation);
 		
 		return note;

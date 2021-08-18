@@ -21,24 +21,11 @@ public class ViolationSerializer extends StdSerializer<Violation> {
 	 
 
 	@Override
-	public void serialize(Violation value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-				 
-        jgen.writeStartObject(); 
-        jgen.writeObjectField("slorule", value.getViolatedRule());
-       
-        serializeActual(value, jgen);
+	public void serialize(Violation value, JsonGenerator jgen, SerializerProvider provider) throws IOException {				 
         
+		jgen.writeStartObject(); 
+        jgen.writeStringField("timestamp", value.getStartTime().toString());
+		jgen.writeNumberField("value", value.getThreshold());
         jgen.writeEndObject();
-		
 	}
-	
-	protected void serializeActual(Violation value, JsonGenerator jgen) throws IOException {
-		jgen.writeFieldName("actual");
-		jgen.writeStartObject();
-		jgen.writeNumberField("threshold", value.getThreshold());
-		jgen.writeNumberField("period", value.getPeriod());
-		jgen.writeEndObject();
-		
-	}
-
 }

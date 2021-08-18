@@ -50,20 +50,25 @@ public class RepositoryTest extends TestWithRepo {
 		
 		Impact impact1 = impact.getTopLevelImpact();
 		Impact impact2 = impact1.getCause();
+		Impact impact3 = impact2.getCause();
 
 		ImpactItem ii1 = impactRepo.save(new ImpactItem(impact1));
 		ImpactItem ii2 = impactRepo.save(new ImpactItem(impact2));
+		ImpactItem ii3 = impactRepo.save(new ImpactItem(impact3));
 		
 		
 		// assert
-		assertEquals(2, impactRepo.count());
+		assertEquals(3, impactRepo.count());
 		
 		assertTrue(impactRepo.findById(ii1.getId()).isPresent());
 		assertTrue(impactRepo.findById(ii2.getId()).isPresent());
+		assertTrue(impactRepo.findById(ii3.getId()).isPresent());
 		ImpactItem actual1 = impactRepo.findById(ii1.getId()).get();
 		ImpactItem actual2 = impactRepo.findById(ii2.getId()).get();
+		ImpactItem actual3 = impactRepo.findById(ii3.getId()).get();
 		
-		assertEquals(null, actual2.getCause());
+		assertEquals(null, actual3.getCause());
+		assertEquals(impact3.getId(), actual2.getCause());
 		assertEquals(impact2.getId(), actual1.getCause());
 		
 	}

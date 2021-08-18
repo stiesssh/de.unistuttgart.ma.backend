@@ -39,14 +39,20 @@ public class NotificationSerializer extends StdSerializer<Notification> {
 				 
         jgen.writeStartObject();        
         serializeImpacts(value.getTopLevelImpact(), jgen);
-        jgen.writeObjectField("rootcause", value.getRootCause()); 
+        serializeViolation(value.getRootCause(), jgen);
+        jgen.writeObjectField("rootcause", value.getRootCause().getViolatedRule());
+        jgen.writeObjectField("location", value.getTopLevelImpact().getLocation()); 
         jgen.writeEndObject();
 		
 	}
 	
+	protected void serializeViolation(Violation violation, JsonGenerator jgen) throws IOException {
+		jgen.writeArrayFieldStart("violations");
+		jgen.writeObject(violation);
+		jgen.writeEndArray();
+	}
+	
 	protected void serializeImpacts(Impact impact, JsonGenerator jgen) throws IOException {
-		
-		
 		jgen.writeArrayFieldStart("impacts");
 		
 		Impact current = impact;

@@ -2,15 +2,19 @@ package de.unistuttgart.ma.backend;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import de.unistuttgart.gropius.api.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.shopify.graphql.support.ID;
 
 import org.slf4j.Logger;
@@ -18,7 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.IssueLocation;
+import de.unistuttgart.gropius.api.Issue;
 import de.unistuttgart.gropius.api.MutationQuery;
+import de.unistuttgart.gropius.api.Query;
+import de.unistuttgart.gropius.api.QueryQuery;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
@@ -45,14 +52,14 @@ import de.unistuttgart.ma.impact.Violation;
  * @author maumau
  *
  */
-@Component
+@org.springframework.stereotype.Component
 public class CreateIssueService {
 
 	private final ObjectMapper mapper;
 	private final SimpleModule module;
 
 	private final GropiusApiQuerier querier;
-	
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public CreateIssueService(@Value("${gropius.url}") String uri) {
@@ -74,23 +81,80 @@ public class CreateIssueService {
 
 	/**
 	 * 
-	 * Create a Gropius issue for given impact.
-	 * 
-	 * @param topLevelImpact impact to create issue for
+	 * @param notification notification to create issue for
+	 * @param location     issue location to create new issue at
+	 * @return id of created issue
 	 * @throws IssueCreationFailedException
 	 */
-	public ID createIssue(Notification topLevelImpact, IssueLocation location) throws IssueCreationFailedException {
+	public ID createIssue(Notification notification, IssueLocation location) throws IssueCreationFailedException {
 
-		String body = createHumanBody(topLevelImpact);
-		String title = createTitle(topLevelImpact);
+		Issue openIssue = getOpenIssueOnLocationForNotification(notification, location);
 
-		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
-		
-		ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
-		
-		logger.info(String.format("Create Issue with ID %s", id.toString()));
-		
-		return id;
+		if (openIssue != null) {
+			logger.info(String.format("Issue \"%s\" alread exist with ID %s", openIssue.getTitle(), openIssue.getId().toString()));
+			return openIssue.getId();
+		}
+
+			String body = createBody(notification);
+			String title = createTitle(notification);
+
+			MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
+
+			ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
+
+			logger.info(String.format("Create Issue with ID %s", id.toString()));
+
+			return id;
+	}
+
+	private Issue getOpenIssueOnLocationForNotification(Notification note, IssueLocation location) {
+		try {
+			Query query = querier.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID(location.getId())));
+			if (!query.getNode().getGraphQlTypeName().equals("Component")) {
+				return null;
+			}
+			
+			List<Issue> bodies = ((Component) query.getNode()).getIssues().getNodes();
+			
+			for (Issue issue : bodies) {
+				String body = issue.getBody();
+				body = body.split("\\(")[1];
+				body = body.split("\\)")[0];
+
+				if (isSameIssue(note, body)) {
+					return issue;
+				}
+			}
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * if any things goes wrong during comparison, treat them as different.
+	 * 
+	 * 
+	 * @param note
+	 * @param json
+	 * @return
+	 */
+	public boolean isSameIssue(Notification note, String json) {
+		try {
+			JsonNode node = mapper.readTree(json);
+			String locationId = node.findPath("location").findPath("id").asText();
+			String rootcauseId = node.findPath("rootcause").findPath("id").asText();
+
+			String noteLocationId = note.getTopLevelImpact().getLocationId();
+			String noterootCauseId = note.getRootCause().getViolatedRule().getId();
+
+			return locationId.equals(noteLocationId) && rootcauseId.equals(noterootCauseId);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	/**
@@ -109,7 +173,7 @@ public class CreateIssueService {
 	 * @param json representation of impact chain
 	 * @return body for issue
 	 */
-	protected String createHumanBody(Notification note) {
+	protected String createBody(Notification note) {
 		StringBuilder sb = new StringBuilder();
 
 		// for the machine
@@ -123,7 +187,6 @@ public class CreateIssueService {
 
 		// for the human
 		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
-		appendHhumanRootCause(note.getRootCause(), sb);
 		sb.append("* Path :\n");
 		Impact current = note.getTopLevelImpact();
 		while (current != null) {

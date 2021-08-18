@@ -15,6 +15,9 @@ import de.unistuttgart.gropius.api.ComponentQueryDefinition;
 import de.unistuttgart.gropius.api.CreateIssueInput;
 import de.unistuttgart.gropius.api.CreateIssuePayloadQuery;
 import de.unistuttgart.gropius.api.CreateIssuePayloadQueryDefinition;
+import de.unistuttgart.gropius.api.IssueFilter;
+import de.unistuttgart.gropius.api.IssuePageQuery;
+import de.unistuttgart.gropius.api.IssuePageQueryDefinition;
 import de.unistuttgart.gropius.api.IssueQuery;
 import de.unistuttgart.gropius.api.IssueQueryDefinition;
 import de.unistuttgart.gropius.api.LinkIssueInput;
@@ -22,6 +25,8 @@ import de.unistuttgart.gropius.api.LinkIssuePayloadQuery;
 import de.unistuttgart.gropius.api.LinkIssuePayloadQueryDefinition;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.api.MutationQueryDefinition;
+import de.unistuttgart.gropius.api.NodeQuery;
+import de.unistuttgart.gropius.api.NodeQueryDefinition;
 import de.unistuttgart.gropius.api.Operations;
 import de.unistuttgart.gropius.api.ProjectFilter;
 import de.unistuttgart.gropius.api.ProjectPageQuery;
@@ -32,6 +37,8 @@ import de.unistuttgart.gropius.api.QueryQuery;
 import de.unistuttgart.gropius.api.QueryQueryDefinition;
 import de.unistuttgart.gropius.api.UserQuery;
 import de.unistuttgart.gropius.api.UserQueryDefinition;
+import de.unistuttgart.gropius.api.ComponentQuery.IssuesArguments;
+import de.unistuttgart.gropius.api.ComponentQuery.IssuesArgumentsDefinition;
 import de.unistuttgart.gropius.api.QueryQuery.ProjectsArguments;
 import de.unistuttgart.gropius.api.QueryQuery.ProjectsArgumentsDefinition;
 
@@ -133,7 +140,7 @@ public class GropiusApiQueries {
 		
 		return Operations.mutation(mqd);
 	}
-	
+		
 	public static MutationQuery getLinkIssueMutation(final ID origin, final ID destination) {
 		
 		// creation request
@@ -146,5 +153,22 @@ public class GropiusApiQueries {
 		MutationQueryDefinition mqd = (MutationQuery mq) -> { mq.linkIssue(lii, queryDef);}; 
 		
 		return Operations.mutation(mqd);
+	}
+	
+	public static QueryQuery getOpenIssueOnComponentQuery(final ID componentId) {
+		 
+		IssueFilter filterIsOpen = new IssueFilter().setIsOpen(true);
+		IssuesArgumentsDefinition issueArgsDef = (IssuesArguments args) -> args.filterBy(filterIsOpen);
+		
+		IssueQueryDefinition issueQueryDef = (IssueQuery iq) -> {iq.body().title();};
+		IssuePageQueryDefinition issuePageQueryDef = (IssuePageQuery ipq) -> {ipq.nodes(issueQueryDef);};
+		
+		ComponentQueryDefinition compQueryDef = (ComponentQuery cq) ->{cq.issues(issueArgsDef, issuePageQueryDef);}; 
+		
+		NodeQueryDefinition queryDef = (NodeQuery nq) -> {nq.onComponent(compQueryDef);};
+		
+		QueryQueryDefinition qqd = (QueryQuery qq) -> {qq.node(componentId, queryDef);};
+		
+		return Operations.query(qqd);
 	}
 }
