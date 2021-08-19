@@ -203,7 +203,7 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	private String getOpenIssue() {
 		return "{\"data\":{\"node\": {\"__typename\": \"Component\",\n"
 				+ "\"id\": \"5ece9e4fd6ac5003\",\n" + "      \"issues\": {\n" + "        \"nodes\": ["
-						+ "{\"id\": \"5ed60349e7385001\", \"body\": \"[//]: # ({\\\"rootcause\\\":{\\\"name\\\":\\\"CI_avail_slo\\\",\\\"id\\\":\\\"CI_avail_slo\\\",\\\"threshold\\\":0.0,\\\"period\\\":0.0},\\\"location\\\":{\\\"name\\\":\\\"payment interface\\\",\\\"id\\\":\\\"Task_4\\\"}})\", \"title\": \"Title\" }"
+						+ "{\"id\": \"5ed60349e7385001\", \"body\": \"[//]: # ({\\\"rootcause\\\":{\\\"name\\\":\\\"CI_respT_slo\\\",\\\"id\\\":\\\"CI_respT_slo\\\",\\\"threshold\\\":0.0,\\\"period\\\":0.0},\\\"location\\\":{\\\"name\\\":\\\"payment interface\\\",\\\"id\\\":\\\"Task_4\\\"}})\", \"title\": \"Title\" }"
 						+ "]}}}}";
 	}
 

@@ -30,7 +30,7 @@ public class AlertControllerTest extends TestWithRepoAndMockServers {
 		service = new CreateIssueService(uri);
 		controller = new AlertController(computationService, systemRepoProxy, service);
 
-		alert = new Alert(0.0, 0.0, "CI_avail_slo", "CI_avail_slo", LocalDateTime.now(), "CI_avail_slo", "CI_avail_slo",
+		alert = new Alert(0.0, 0.0, "CI_respT_slo", "CI_respT_slo", LocalDateTime.now(), "CI_respT_slo", "CI_respT_slo",
 				"trigger", gropiusId, issueLocationId, "todo_linkedissueid");
 
 	}

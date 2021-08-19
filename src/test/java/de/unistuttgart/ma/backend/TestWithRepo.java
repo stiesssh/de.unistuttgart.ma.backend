@@ -103,7 +103,7 @@ public abstract class TestWithRepo {
 		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029");
 		ComponentInterface paymentFace = system.getComponentInterfaceById("5e8cf760d345a028");
 		FlowElement task = system.getTaskById("Task_4");
-		SloRule rule = system.getSloForNode(creditInstituteFace).iterator().next();
+		SloRule rule = system.getSloById("CI_respT_slo");
 	
 		
 		Issue issue = GropiusFactory.eINSTANCE.createIssue();
