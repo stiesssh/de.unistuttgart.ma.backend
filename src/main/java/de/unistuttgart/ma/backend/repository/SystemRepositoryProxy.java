@@ -5,14 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import javax.swing.plaf.synth.SynthStyleFactory;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -24,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.unistuttgart.ma.saga.SagaFactory;
 import de.unistuttgart.ma.saga.SagaPackage;
 import de.unistuttgart.ma.saga.System;
 
@@ -47,7 +42,6 @@ public class SystemRepositoryProxy {
 		this.repository = repository;
 		this.set = set;
 
-		this.loadedSystems = new HashMap<>();
 		this.projectId2SystemId = new HashMap<>();
 		this.systemId2ResourceUri = new HashMap<>();
 
@@ -77,9 +71,6 @@ public class SystemRepositoryProxy {
 		}
 
 	}
-
-	// systemItemid -> system
-	private final Map<String, de.unistuttgart.ma.saga.System> loadedSystems;
 
 	// TODO : 1 : n mapping
 	private final Map<String, String> projectId2SystemId;
@@ -164,14 +155,10 @@ public class SystemRepositoryProxy {
 	 * @return the system with the given id
 	 */
 	public System findById(String id) {
-		if (loadedSystems.containsKey(id)) {
-			return loadedSystems.get(id);
-		}
 		if (repository.existsById(id)) {
 			SystemItem item = repository.findById(id).get();
 			try {
 				System system = deserializeSystem(item.getContent(), item.getFilename());
-				loadedSystems.put(item.getId(), system);
 				return system;
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -31,10 +31,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.shopify.graphql.support.ID;
 
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQueries;
-import de.unistuttgart.ma.backend.importer.slo.FlatSloRule;
-import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.ComparisonOperator;
-import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.PresetOption;
-import de.unistuttgart.ma.backend.importer.slo.FlatSloRule.StatisticsOption;
+import de.unistuttgart.ma.backend.importer.slo.FlatSolomonRule;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 public abstract class TestWithRepoAndMockServers extends TestWithRepo {
@@ -170,25 +167,21 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	// HELPERS
 	//
 
-	public List<FlatSloRule> getRules() {
-		List<FlatSloRule> rules = new ArrayList<>();
+	public List<FlatSolomonRule> getRules() {
+		List<FlatSolomonRule> rules = new ArrayList<>();
 
-		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005", PresetOption.RESPONSE_TIME));
-		rules.add(makeRules("anotherIface_respT_slo", "5e9453065b4a7002", "5e94553f2a4a7006",
-				PresetOption.RESPONSE_TIME));
-		rules.add(makeRules("CI_respT_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOption.RESPONSE_TIME));
+		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005"));
+		rules.add(makeRules("anotherIface_respT_slo", "5e9453065b4a7002", "5e94553f2a4a7006"));
+		rules.add(makeRules("CI_respT_slo", "5e8cf6eaf785a021", "5e8cf780c585a029"));
 
-		rules.add(makeRules("CI_avail_slo", "5e8cf6eaf785a021", "5e8cf780c585a029", PresetOption.AVAILABILITY));
-		rules.add(makeRules("payment_avail_slo", "5e8cf6d4fe05a01f", "5e8cf760d345a028", PresetOption.AVAILABILITY));
+		rules.add(makeRules("CI_avail_slo", "5e8cf6eaf785a021", "5e8cf780c585a029"));
+		rules.add(makeRules("payment_avail_slo", "5e8cf6d4fe05a01f", "5e8cf760d345a028"));
 
 		return rules;
 	}
 
-	private FlatSloRule makeRules(String name, String componentId, String InterfaceId, PresetOption preset) {
-		FlatSloRule rule = new FlatSloRule("5e8cc17ed645a00c", componentId, InterfaceId, name, 0.5, 10);
-		rule.setPresetOption(preset);
-		rule.setComparisonOperator(ComparisonOperator.EQUAL);
-		rule.setStatisticsOption(StatisticsOption.AVG);
+	private FlatSolomonRule makeRules(String name, String componentId, String InterfaceId) {
+		FlatSolomonRule rule = new FlatSolomonRule(name, name, name,"environment", "alert-id", gropiusId, componentId, "preset", "metricOption", "compoarisonOption", "statistisOPtion", 0.5, 10);
 		return rule;
 	}
 
