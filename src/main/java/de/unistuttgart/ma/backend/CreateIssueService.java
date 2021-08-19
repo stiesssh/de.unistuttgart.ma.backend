@@ -118,9 +118,7 @@ public class CreateIssueService {
 			
 			for (Issue issue : bodies) {
 				String body = issue.getBody();
-				body = body.split("\\(")[1];
-				body = body.split("\\)")[0];
-
+			
 				if (isSameIssue(note, body)) {
 					return issue;
 				}
@@ -141,7 +139,14 @@ public class CreateIssueService {
 	 * @param json
 	 * @return
 	 */
-	public boolean isSameIssue(Notification note, String json) {
+	public boolean isSameIssue(Notification note, String body) {
+		
+		if (! (body.contains("[//]: # (") && body.contains(")"))) {
+			return false;
+		}
+		
+		String json = body.split("\\(")[1].split("\\)")[0];
+
 		try {
 			JsonNode node = mapper.readTree(json);
 			String locationId = node.findPath("location").findPath("id").asText();

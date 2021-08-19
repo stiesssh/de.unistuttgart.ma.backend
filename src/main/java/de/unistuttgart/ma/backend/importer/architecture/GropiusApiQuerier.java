@@ -55,8 +55,9 @@ public class GropiusApiQuerier {
 
 		String queryString = "query=" + URLEncoder.encode(query.toString(), "UTF-8");
 		URI requestUri = URI.create(apiUri.toString() + "?" + queryString);
-
 		HttpRequest request = HttpRequest.newBuilder().GET().uri(requestUri).build();
+		
+		logger.debug(String.format("Send %s query request to %s.", request.method(), request.uri().toString()));
 		String body = request(request);
 
 		return gsonInstance.fromJson(body, Query.class);
@@ -76,6 +77,7 @@ public class GropiusApiQuerier {
 	 * @throws InterruptedException
 	 */
 	public String request(final HttpRequest request) throws IOException, InterruptedException {
+		
 		HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
 
 		if (response.statusCode() != 200) {
@@ -87,6 +89,8 @@ public class GropiusApiQuerier {
 		// Cut {"data": and }
 		// This is probably a mismatch between the server and the apibindings generator
 		body = body.substring(8, body.length() - 1);
+		
+		logger.debug(String.format("Response: %s ", body));
 
 		return body;
 	}
@@ -107,6 +111,9 @@ public class GropiusApiQuerier {
 		URI requestUri = URI.create(apiUri.toString());
 		HttpRequest request = HttpRequest.newBuilder().POST(BodyPublishers.ofString(full)).uri(requestUri)
 				.header("Content-Type", "application/json").build();
+		
+		logger.debug(String.format("Send %s mutation request to %s.", request.method(), request.uri().toString()));
+		logger.debug(String.format("Body : %s ", full));
 		
 		return request(request);
 	}
