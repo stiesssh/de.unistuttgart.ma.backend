@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend.serializer;
+package de.unistuttgart.ma.backend.utility;
 
 import java.io.IOException;
 

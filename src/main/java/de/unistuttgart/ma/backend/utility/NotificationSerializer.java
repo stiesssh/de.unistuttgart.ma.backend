@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend.serializer;
+package de.unistuttgart.ma.backend.utility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,10 +38,10 @@ public class NotificationSerializer extends StdSerializer<Notification> {
 	public void serialize(Notification value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 				 
         jgen.writeStartObject();        
+        jgen.writeObjectField("impactlocation", value.getTopLevelImpact().getLocation()); 
+        jgen.writeObjectField("violatedrule", value.getRootCause().getViolatedRule());
         serializeImpacts(value.getTopLevelImpact(), jgen);
-        serializeViolation(value.getRootCause(), jgen);
-        jgen.writeObjectField("rootcause", value.getRootCause().getViolatedRule());
-        jgen.writeObjectField("location", value.getTopLevelImpact().getLocation()); 
+        //serializeViolation(value.getRootCause(), jgen);
         jgen.writeEndObject();
 		
 	}
@@ -53,7 +53,7 @@ public class NotificationSerializer extends StdSerializer<Notification> {
 	}
 	
 	protected void serializeImpacts(Impact impact, JsonGenerator jgen) throws IOException {
-		jgen.writeArrayFieldStart("impacts");
+		jgen.writeArrayFieldStart("impactpath");
 		
 		Impact current = impact;
 		while (current != null) {

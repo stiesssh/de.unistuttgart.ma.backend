@@ -27,7 +27,9 @@ import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.GropiusFactory;
 import de.unistuttgart.gropius.Issue;
 import de.unistuttgart.gropius.slo.SloRule;
-import de.unistuttgart.ma.backend.importer.SagaImporterService;
+import de.unistuttgart.ma.backend.app.ModelController;
+import de.unistuttgart.ma.backend.app.CalculateNotificationService;
+import de.unistuttgart.ma.backend.app.ModelService;
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
@@ -42,9 +44,9 @@ import de.unistuttgart.ma.saga.System;
 @ActiveProfiles("test")
 public abstract class TestWithRepo {
 	
-	protected NotificationCreationService computationService;
-	protected SagaImporterService importService;
-	protected Controller controller;
+	protected CalculateNotificationService computationService;
+	protected ModelService importService;
+	protected ModelController controller;
 	
 	protected SystemRepositoryProxy systemRepoProxy;
 	@Autowired protected SystemRepository systemRepo;
@@ -64,8 +66,8 @@ public abstract class TestWithRepo {
 		
 		systemRepoProxy = new SystemRepositoryProxy(systemRepo, set);
 		
-		importService = new SagaImporterService(systemRepoProxy, set);
-		computationService = new NotificationCreationService(systemRepoProxy, impactRepo);
+		importService = new ModelService(systemRepoProxy, set);
+		computationService = new CalculateNotificationService(systemRepoProxy, impactRepo);
 		
 		systemRepo.deleteAll();
 		impactRepo.deleteAll();

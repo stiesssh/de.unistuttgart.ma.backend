@@ -7,14 +7,11 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.shopify.graphql.support.ID;
 
 import de.unistuttgart.gropius.GropiusFactory;
 import de.unistuttgart.gropius.IssueLocation;
+import de.unistuttgart.ma.backend.app.CreateIssueService;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.impact.Notification;
 
@@ -24,8 +21,6 @@ import de.unistuttgart.ma.impact.Notification;
  *
  */
 public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
-
-	private ObjectMapper mapper;
 	
 	String uri; 
 	CreateIssueService service;
@@ -36,8 +31,6 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 		super.setUp();
 		uri = "http://localhost:" + port + gropius;
 		service = new CreateIssueService(uri);
-		
-		mapper = new ObjectMapper();
 	}
 	
 	/**

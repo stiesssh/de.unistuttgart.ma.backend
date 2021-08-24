@@ -99,7 +99,7 @@ public class GropiusApiQueries {
 		ComponentQueryDefinition cqd = (ComponentQuery cq) -> {cq.name().consumedInterfaces(cipqd).interfaces(cipqd);};	
 		ComponentPageQueryDefinition cpqd = (ComponentPageQuery cpq) -> {cpq.nodes(cqd);};
 	
-		ProjectQueryDefinition pqd = (ProjectQuery pq) -> {pq.components(cpqd);};
+		ProjectQueryDefinition pqd = (ProjectQuery pq) -> {pq.components(cpqd).name();};
 		projectPageQueryDef = (ProjectPageQuery ppq) -> {ppq.nodes(pqd);};
 	}
 

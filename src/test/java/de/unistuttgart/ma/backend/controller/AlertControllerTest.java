@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.unistuttgart.ma.backend.AlertController;
-import de.unistuttgart.ma.backend.CreateIssueService;
 import de.unistuttgart.ma.backend.TestWithRepoAndMockServers;
+import de.unistuttgart.ma.backend.app.AlertController;
+import de.unistuttgart.ma.backend.app.CreateIssueService;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.rest.Alert;

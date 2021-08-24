@@ -1,48 +1,44 @@
-package de.unistuttgart.ma.backend;
+package de.unistuttgart.ma.backend.app;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import de.unistuttgart.gropius.api.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.shopify.graphql.support.ID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.IssueLocation;
+import de.unistuttgart.gropius.api.Component;
 import de.unistuttgart.gropius.api.Issue;
 import de.unistuttgart.gropius.api.MutationQuery;
 import de.unistuttgart.gropius.api.Query;
-import de.unistuttgart.gropius.api.QueryQuery;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQuerier;
 import de.unistuttgart.ma.backend.importer.architecture.GropiusApiQueries;
-import de.unistuttgart.ma.backend.serializer.ImpactSerializer;
-import de.unistuttgart.ma.backend.serializer.InterfaceSerializer;
-import de.unistuttgart.ma.backend.serializer.NotificationSerializer;
-import de.unistuttgart.ma.backend.serializer.SloRuleSerializer;
-import de.unistuttgart.ma.backend.serializer.StepSerializer;
-import de.unistuttgart.ma.backend.serializer.TaskSerializer;
-import de.unistuttgart.ma.backend.serializer.ViolationSerializer;
-import de.unistuttgart.ma.saga.IdentifiableElement;
-import de.unistuttgart.ma.saga.SagaStep;
+import de.unistuttgart.ma.backend.utility.ImpactSerializer;
+import de.unistuttgart.ma.backend.utility.InterfaceSerializer;
+import de.unistuttgart.ma.backend.utility.NotificationSerializer;
+import de.unistuttgart.ma.backend.utility.SloRuleSerializer;
+import de.unistuttgart.ma.backend.utility.StepSerializer;
+import de.unistuttgart.ma.backend.utility.TaskSerializer;
+import de.unistuttgart.ma.backend.utility.ViolationSerializer;
 import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
+import de.unistuttgart.ma.saga.IdentifiableElement;
+import de.unistuttgart.ma.saga.SagaStep;
 
 /**
  * creates gropius issues for impacts.
@@ -169,7 +165,7 @@ public class CreateIssueService {
 	 * @return json representation of the impact chain
 	 * @throws JsonProcessingException
 	 */
-	protected String parseToJson(Notification topLevelImpact) throws JsonProcessingException {
+	public String parseToJson(Notification topLevelImpact) throws JsonProcessingException {
 		return mapper.writeValueAsString(topLevelImpact);
 	}
 
@@ -178,7 +174,7 @@ public class CreateIssueService {
 	 * @param json representation of impact chain
 	 * @return body for issue
 	 */
-	protected String createBody(Notification note) {
+	public String createBody(Notification note) {
 		StringBuilder sb = new StringBuilder();
 
 		// for the machine

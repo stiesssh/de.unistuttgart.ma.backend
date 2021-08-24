@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend.importer;
+package de.unistuttgart.ma.backend.app;
 
 import java.io.IOException;
 import java.util.Set;
@@ -31,12 +31,12 @@ import de.unistuttgart.ma.saga.System;
  *
  */
 @Component
-public class SagaImporterService {
+public class ModelService {
 
 	private final SystemRepositoryProxy systemRepoProxy;
 	private final ResourceSet set;
 
-	public SagaImporterService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ResourceSet set) {
+	public ModelService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ResourceSet set) {
 		this.systemRepoProxy = systemRepoProxy;
 		this.set = set;
 

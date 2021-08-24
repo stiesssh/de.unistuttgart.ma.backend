@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend;
+package de.unistuttgart.ma.backend.app;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;

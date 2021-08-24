@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend;
+package de.unistuttgart.ma.backend.app;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
-import de.unistuttgart.ma.backend.computationUtility.QueueItem;
 import de.unistuttgart.ma.backend.repository.ImpactItem;
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
+import de.unistuttgart.ma.backend.utility.QueueItem;
 import de.unistuttgart.ma.saga.Saga;
 import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.saga.System;
@@ -30,12 +30,12 @@ import de.unistuttgart.ma.impact.Violation;
  *
  */
 @org.springframework.stereotype.Component
-public class NotificationCreationService {
+public class CalculateNotificationService {
 
 	private final SystemRepositoryProxy systemRepoProxy;
 	private final ImpactRepository impactRepo;
 	
-	public NotificationCreationService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ImpactRepository impactRepo) {
+	public CalculateNotificationService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ImpactRepository impactRepo) {
 		this.systemRepoProxy = systemRepoProxy;
 		this.impactRepo = impactRepo;
 	}

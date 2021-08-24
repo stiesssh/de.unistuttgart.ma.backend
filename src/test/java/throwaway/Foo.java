@@ -98,9 +98,8 @@ public class Foo {
 	@Test
 	public void closeAllIssues() throws IOException, InterruptedException {
 		GropiusApiQuerier queriere  = new GropiusApiQuerier("http://localhost:8080/api/");
-		//Query query = queriere.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID("5ece9ebcc4ec5011")));
-		
-		Query query = queriere.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID("5ece9ed4662c5013")));
+		Query query = queriere.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID("5ece9ebcc4ec5011")));
+		//Query query = queriere.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID("5ece9ed4662c5013")));
 
 		
 		

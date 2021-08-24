@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend;
+package de.unistuttgart.ma.backend.app;
 
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -48,13 +48,13 @@ import de.unistuttgart.ma.impact.Violation;
 @RestController
 public class AlertController {
 
-	private final NotificationCreationService service;
+	private final CalculateNotificationService service;
 	private final CreateIssueService issueService;
 	private final SystemRepositoryProxy systemRepoProxy;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	public AlertController(@Autowired NotificationCreationService service,
+	public AlertController(@Autowired CalculateNotificationService service,
 			@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired CreateIssueService issueService) {
 		this.service = service;
 		this.systemRepoProxy = systemRepoProxy;

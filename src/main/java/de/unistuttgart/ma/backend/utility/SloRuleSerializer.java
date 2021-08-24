@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend.serializer;
+package de.unistuttgart.ma.backend.utility;
 
 import java.io.IOException;
 
@@ -28,9 +28,8 @@ public class SloRuleSerializer extends StdSerializer<SloRule> {
         jgen.writeStartObject();
         jgen.writeStringField("name", value.getName());
         jgen.writeStringField("id", value.getId());
-		jgen.writeNumberField("threshold", value.getThreshold());
-		jgen.writeNumberField("period", value.getPeriod());
-		// TODO : others : statistics and stuff.
+		//jgen.writeNumberField("threshold", value.getThreshold());
+		//jgen.writeNumberField("period", value.getPeriod());
         jgen.writeEndObject();
 	}
 }

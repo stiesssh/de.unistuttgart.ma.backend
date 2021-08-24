@@ -52,7 +52,7 @@ public class FooTestSchema {
 		JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance();
 
 		InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("./json/notification.schema.json");
-		InputStream jsonStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("./json/notification.json");
+		InputStream jsonStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("./json/final.json");
 
 		JsonNode json = objectMapper.readTree(jsonStream);
 		JsonSchema schema = schemaFactory.getSchema(schemaStream);

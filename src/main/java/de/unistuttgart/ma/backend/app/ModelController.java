@@ -1,4 +1,4 @@
-package de.unistuttgart.ma.backend;
+package de.unistuttgart.ma.backend.app;
 
 import java.io.IOException;
 
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.unistuttgart.ma.backend.exceptions.MissingSystemModelException;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
-import de.unistuttgart.ma.backend.importer.SagaImporterService;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 /**
@@ -25,12 +24,12 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
  *
  */
 @RestController
-public class Controller {
+public class ModelController {
 
-	private final SagaImporterService importService;
+	private final ModelService service;
 
-	public Controller(@Autowired SagaImporterService importService) {
-		this.importService = importService;
+	public ModelController(@Autowired ModelService modelService) {
+		this.service = modelService;
 	}
 
 	/**
@@ -40,13 +39,13 @@ public class Controller {
 	 */
 	@PostMapping("/api/model/{systemId}")
 	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
-		importService.updateModel(xml, systemId);
+		service.updateModel(xml, systemId);
 	}
 
 	@PostMapping("/api/model")
 	public String createModel(@RequestBody ImportRequest request) throws ModelCreationFailedException {
 		try {
-			return importService.createModel(request);
+			return service.createModel(request);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new ModelCreationFailedException("model creation failed : " + e.getMessage(), e);
@@ -55,7 +54,7 @@ public class Controller {
 
 	@GetMapping("/api/model/{systemId}")
 	public String getModel(@PathVariable String systemId) throws ModelCreationFailedException {
-		return importService.getModel(systemId);
+		return service.getModel(systemId);
 	}
 
 	@GetMapping("/")
