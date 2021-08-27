@@ -87,20 +87,21 @@ public class CreateIssueService {
 		Issue openIssue = getOpenIssueOnLocationForNotification(notification, location);
 
 		if (openIssue != null) {
-			logger.info(String.format("Issue \"%s\" alread exist with ID %s", openIssue.getTitle(), openIssue.getId().toString()));
+			logger.info(String.format("Issue \"%s\" alread exist with ID %s", openIssue.getTitle(),
+					openIssue.getId().toString()));
 			return openIssue.getId();
 		}
 
-			String body = createBody(notification);
-			String title = createTitle(notification);
+		String body = createBody(notification);
+		String title = createTitle(notification);
 
-			MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
+		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
 
-			ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
+		ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
 
-			logger.info(String.format("Create Issue with ID %s", id.toString()));
+		logger.info(String.format("Create Issue with ID %s", id.toString()));
 
-			return id;
+		return id;
 	}
 
 	private Issue getOpenIssueOnLocationForNotification(Notification note, IssueLocation location) {
@@ -109,12 +110,12 @@ public class CreateIssueService {
 			if (!query.getNode().getGraphQlTypeName().equals("Component")) {
 				return null;
 			}
-			
+
 			List<Issue> bodies = ((Component) query.getNode()).getIssues().getNodes();
-			
+
 			for (Issue issue : bodies) {
 				String body = issue.getBody();
-			
+
 				if (isSameIssue(note, body)) {
 					return issue;
 				}
@@ -145,8 +146,15 @@ public class CreateIssueService {
 
 		try {
 			JsonNode node = mapper.readTree(json);
-			String locationId = node.findPath("location").findPath("id").asText();
-			String rootcauseId = node.findPath("rootcause").findPath("id").asText();
+			if(node.findPath("impactlocation").isMissingNode() ||
+					node.findPath("violatedrule").isMissingNode() ||
+					node.findPath("impactlocation").findPath("id").isMissingNode() ||
+					node.findPath("violatedrule").findPath("id").isMissingNode() ) {
+				logger.error("wrong json schema, omitting an issue.");
+			}
+			
+			String locationId = node.findPath("impactlocation").findPath("id").asText();
+			String rootcauseId = node.findPath("violatedrule").findPath("id").asText();
 
 			String noteLocationId = note.getTopLevelImpact().getLocationId();
 			String noterootCauseId = note.getRootCause().getViolatedRule().getId();
