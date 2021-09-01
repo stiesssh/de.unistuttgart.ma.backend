@@ -96,7 +96,6 @@ public class AlertController {
 			
 			
 			ID issueId = issueService.createIssue(notification, rule.getGropiusComponent());
-			logger.info(String.format("create issue for %s", alert.getSloName()));
 			issueService.linkIssue(issueId, relatedIssueId);
 		}
 	}

@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
+import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,8 +100,8 @@ public class CreateIssueService {
 		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
 
 		ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
-
-		logger.info(String.format("Create Issue with ID %s", id.toString()));
+		
+		logger.info(String.format("Create Issue. ID : %s, Title : %s", id.toString(), title));
 
 		return id;
 	}
@@ -195,13 +197,13 @@ public class CreateIssueService {
 		sb.append(")").append("\n");
 
 		// for the human
-		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
-		sb.append("* Path :\n");
-		Impact current = note.getTopLevelImpact();
-		while (current != null) {
-			appendHumanPathStep(current, sb);
-			current = current.getCause();
-		}
+//		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
+//		sb.append("* Path :\n");
+//		Impact current = note.getTopLevelImpact();
+//		while (current != null) {
+//			appendHumanPathStep(current, sb);
+//			current = current.getCause();
+//		}
 
 		return sb.toString();
 	}
@@ -217,10 +219,18 @@ public class CreateIssueService {
 	 */
 	protected String createTitle(Notification topLevelImpact) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("[ ").append(Instant.now().toString()).append(" ]");
-		sb.append("Impact on ").append(getLocationName(topLevelImpact.getTopLevelImpact()))
-				.append(" caused by Violation of ");
-		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName());
+		//sb.append("[ ").append(Instant.now().toString()).append(" ]");
+		sb.append("Impact on ")
+			.append(getLocationContainerType(topLevelImpact.getTopLevelImpact()))
+			.append(" ")
+			.append(getLocationContainerName(topLevelImpact.getTopLevelImpact()))
+			.append(" at ")
+			.append(getLocationType(topLevelImpact.getTopLevelImpact()))
+			.append(" ")
+			.append(getLocationName(topLevelImpact.getTopLevelImpact()))
+			.append(" caused by Violation of SLO rule ");
+		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName()).append(".");
+		
 		return sb.toString();
 	}
 
@@ -241,7 +251,63 @@ public class CreateIssueService {
 		}
 		throw new IllegalStateException("illegal model");
 	}
+	
+	/**
+	 * 
+	 * @param topLevelImpact
+	 * @return
+	 */
+	protected String getLocationContainerName(Impact topLevelImpact) {
+		EObject container = topLevelImpact.getLocation().eContainer(); 
+		if (container instanceof IssueLocation) {
+			return ((IssueLocation) container).getName();
+		}
+		if (container instanceof IdentifiableElement) {
+			return ((IdentifiableElement) container).getName();
+		}
+		if (container instanceof org.eclipse.bpmn2.Process) {
+			return ((org.eclipse.bpmn2.Process) container).getName();
+		}
+		throw new IllegalStateException("illegal model");
+	}
 
+	/**
+	 * 
+	 * @param topLevelImpact
+	 * @return
+	 */
+	protected String getLocationContainerType(Impact topLevelImpact) {
+		EObject container = topLevelImpact.getLocation().eContainer(); 
+		if (container instanceof IssueLocation) {
+			return "Component";
+		}
+		if (container instanceof IdentifiableElement) {
+			return "Saga";
+		}
+		if (container instanceof org.eclipse.bpmn2.Process) {
+			return "Process";
+		}
+		throw new IllegalStateException("illegal model");
+	}
+
+	/**
+	 * 
+	 * @param topLevelImpact
+	 * @return
+	 */
+	protected String getLocationType(Impact topLevelImpact) {
+		if (topLevelImpact.getLocation() instanceof IssueLocation) {
+			return "Interface";
+		}
+		if (topLevelImpact.getLocation() instanceof IdentifiableElement) {
+			return "Step";
+		}
+		if (topLevelImpact.getLocation() instanceof FlowElement) {
+			return "Task";
+		}
+		throw new IllegalStateException("illegal model");
+	}
+	
 	protected void appendHumanLocation(Object obj, StringBuilder sb) {
 		sb.append("* Location : **").append(obj.toString()).append("**").append("\n");
 	}
