@@ -4,55 +4,92 @@
     "description": "a notification",
     "type": "object",
     "properties": {
-    	"rootCause" : {
-    		"title": "violation",
-    		"description": "violation of slorule",
+    	"impactlocation" : {
+    		"title": "impactlocation",
+    		"description": "location of the top level impact",
       		"type" : "object",
             "properties": {
-            	"slorule" : {
-    				"description": "violated slorule",
-      				"type" : "object"
+            	"name" : {
+    				"description": "name of the impacted location",
+      				"type" : "string"
     			},
-      			"actual" : {
-      				"description": "values of the violation",
-      				"type" : "object"
+      			"id" : {
+      				"description": "id of the impacted location",
+      				"type" : "string"
     			}
-    		}
+    		},
+    		"required": [
+        		"name",
+        		"id"
+    		]
       	},
-        "impacts": {
+    	"violatedrule" : {
+    		"title": "violatedrule",
+    		"description": "violated slo rule",
+      		"type" : "object",
+            "properties": {
+            	"name" : {
+    				"description": "name of violated slorule",
+      				"type" : "string"
+    			},
+      			"id" : {
+      				"description": "id of the violated slorule",
+      				"type" : "string"
+    			}
+    		},
+    		"required": [
+        		"name",
+        		"id"
+    		]
+      	},
+        "impactpath": {
             "type": "array",
             "items": { 
-    			"title": "impact",
-    			"description": "impact on a location",
+    			"title": "location",
+    			"description": "location that is part of the impact path",
             	"type": "object",
             	"properties": {
             		"id" : {
-    					"description": "id of this impact",
+    					"description": "id of the location",
       					"type" : "string"
     				},
-      				"cause" : {
-      					"description": "id of impact that caused this impact",
+    				"name" : {
+    					"description": "name of the location",
       					"type" : "string"
     				},
-    				"location" : {
-    					"title": "location",
-    					"description": "location of this impact",
+    				"type" : {
+    					"description": "type of the location",
+      					"type" : "string"
+    				},
+    				"container" : {
+    					"title": "container",
+    					"description": "container of the location",
             			"type": "object",
             			"properties": {
             				"id" : {
-    							"description": "id of the location",
+    							"description": "id of the location container",
       							"type" : "string"
     						},
     						"name" : {
-    							"description": "name of the location",
+    							"description": "name of the location container",
+      							"type" : "string"
+    						},
+    						"type" : {
+    							"description": "type of the location container",
       							"type" : "string"
     						}
-            			}
-    				}    				
-    			}
+            			},
+    					"required": ["name", "id", "type"]
+    				},
+      				"cause" : {
+      					"description": "id of location that caused this location to be impacted",
+      					"type" : "string"
+    				}
+    			},
+    			"required": ["name", "id", "type", "container"]
             },
-            "minItems": 1,
             "uniqueItems": true
        }
-    }
+    },
+    "required": ["impactlocation", "violatedrule", "impactpath"]
 }

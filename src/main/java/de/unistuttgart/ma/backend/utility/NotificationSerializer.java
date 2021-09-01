@@ -1,25 +1,14 @@
 package de.unistuttgart.ma.backend.utility;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.eclipse.bpmn2.Task;
-import org.eclipse.emf.ecore.EObject;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import de.unistuttgart.gropius.api.ComponentInterface;
-import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
-import de.unistuttgart.ma.saga.SagaStep;
 
 /**
  * 
@@ -40,6 +29,7 @@ public class NotificationSerializer extends StdSerializer<Notification> {
         jgen.writeStartObject();        
         jgen.writeObjectField("impactlocation", value.getTopLevelImpact().getLocation()); 
         jgen.writeObjectField("violatedrule", value.getRootCause().getViolatedRule());
+        //jgen.writeStringField("firstreported", Instant.now().toString());
         serializeImpacts(value.getTopLevelImpact(), jgen);
         //serializeViolation(value.getRootCause(), jgen);
         jgen.writeEndObject();

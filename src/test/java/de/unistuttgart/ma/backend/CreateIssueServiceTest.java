@@ -1,12 +1,20 @@
 package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.ValidationMessage;
 import com.shopify.graphql.support.ID;
 
 import de.unistuttgart.gropius.GropiusFactory;
@@ -87,9 +95,25 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 		Notification note = createImpactChain();
 		
 		CreateIssueService service = new CreateIssueService(uri);
-		String json = service.parseToJson(note);
+		String actual = service.parseToJson(note);
 	
-		System.out.println(json);
+		System.out.println(actual);
+		
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance();
+
+		InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("./json/notification.schema.json");
+		
+
+		JsonNode json = objectMapper.readTree(actual);
+		JsonSchema schema = schemaFactory.getSchema(schemaStream);
+		Set<ValidationMessage> validationResult = schema.validate(json);
+
+		// print validation errors
+		if (!validationResult.isEmpty()) {
+			validationResult.forEach(vm -> System.out.println(vm.getMessage()));
+			fail();
+		}
 		
 		// TODO : assert !?!?
 

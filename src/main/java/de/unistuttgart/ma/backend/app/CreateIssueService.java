@@ -195,7 +195,6 @@ public class CreateIssueService {
 			e.printStackTrace();
 		}
 		sb.append(")").append("\n");
-
 		// for the human
 //		appendHumanLocation(note.getRootCause().getViolatedRule().getGropiusComponent(), sb);
 //		sb.append("* Path :\n");
@@ -221,93 +220,20 @@ public class CreateIssueService {
 		StringBuilder sb = new StringBuilder();
 		//sb.append("[ ").append(Instant.now().toString()).append(" ]");
 		sb.append("Impact on ")
-			.append(getLocationContainerType(topLevelImpact.getTopLevelImpact()))
+			.append(topLevelImpact.getTopLevelImpact().getLocationContainerType())
 			.append(" ")
-			.append(getLocationContainerName(topLevelImpact.getTopLevelImpact()))
+			.append(topLevelImpact.getTopLevelImpact().getLocationContainerName())
 			.append(" at ")
-			.append(getLocationType(topLevelImpact.getTopLevelImpact()))
+			.append(topLevelImpact.getTopLevelImpact().getLocationType())
 			.append(" ")
-			.append(getLocationName(topLevelImpact.getTopLevelImpact()))
+			.append(topLevelImpact.getTopLevelImpact().getLocationName())
 			.append(" caused by Violation of SLO rule ");
 		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName()).append(".");
 		
 		return sb.toString();
 	}
-
-	/**
-	 * 
-	 * @param topLevelImpact
-	 * @return
-	 */
-	protected String getLocationName(Impact topLevelImpact) {
-		if (topLevelImpact.getLocation() instanceof IssueLocation) {
-			return ((IssueLocation) topLevelImpact.getLocation()).getName();
-		}
-		if (topLevelImpact.getLocation() instanceof IdentifiableElement) {
-			return ((IdentifiableElement) topLevelImpact.getLocation()).getName();
-		}
-		if (topLevelImpact.getLocation() instanceof FlowElement) {
-			return ((FlowElement) topLevelImpact.getLocation()).getName();
-		}
-		throw new IllegalStateException("illegal model");
-	}
 	
-	/**
-	 * 
-	 * @param topLevelImpact
-	 * @return
-	 */
-	protected String getLocationContainerName(Impact topLevelImpact) {
-		EObject container = topLevelImpact.getLocation().eContainer(); 
-		if (container instanceof IssueLocation) {
-			return ((IssueLocation) container).getName();
-		}
-		if (container instanceof IdentifiableElement) {
-			return ((IdentifiableElement) container).getName();
-		}
-		if (container instanceof org.eclipse.bpmn2.Process) {
-			return ((org.eclipse.bpmn2.Process) container).getName();
-		}
-		throw new IllegalStateException("illegal model");
-	}
 
-	/**
-	 * 
-	 * @param topLevelImpact
-	 * @return
-	 */
-	protected String getLocationContainerType(Impact topLevelImpact) {
-		EObject container = topLevelImpact.getLocation().eContainer(); 
-		if (container instanceof IssueLocation) {
-			return "Component";
-		}
-		if (container instanceof IdentifiableElement) {
-			return "Saga";
-		}
-		if (container instanceof org.eclipse.bpmn2.Process) {
-			return "Process";
-		}
-		throw new IllegalStateException("illegal model");
-	}
-
-	/**
-	 * 
-	 * @param topLevelImpact
-	 * @return
-	 */
-	protected String getLocationType(Impact topLevelImpact) {
-		if (topLevelImpact.getLocation() instanceof IssueLocation) {
-			return "Interface";
-		}
-		if (topLevelImpact.getLocation() instanceof IdentifiableElement) {
-			return "Step";
-		}
-		if (topLevelImpact.getLocation() instanceof FlowElement) {
-			return "Task";
-		}
-		throw new IllegalStateException("illegal model");
-	}
-	
 	protected void appendHumanLocation(Object obj, StringBuilder sb) {
 		sb.append("* Location : **").append(obj.toString()).append("**").append("\n");
 	}

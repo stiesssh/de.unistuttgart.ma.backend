@@ -37,6 +37,7 @@ import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.ImpactFactory;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
+import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.saga.System;
 
 @ContextConfiguration(classes = TestContext.class)
@@ -104,6 +105,7 @@ public abstract class TestWithRepo {
 		// create 
 		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029");
 		ComponentInterface paymentFace = system.getComponentInterfaceById("5e8cf760d345a028");
+		SagaStep step = system.getSagaStepById("paymentStep");
 		FlowElement task = system.getTaskById("Task_4");
 		SloRule rule = system.getSloById("CI_respT_slo");
 	
@@ -117,12 +119,18 @@ public abstract class TestWithRepo {
 		Impact impact2 = ImpactFactory.eINSTANCE.createImpact();
 		impact2.setLocation(paymentFace);
 		impact2.setId("impact-pay");
+
+		Impact impact22 = ImpactFactory.eINSTANCE.createImpact();
+		impact22.setLocation(step);
+		impact22.setId("impact-step");
+		
 		Impact impact3 = ImpactFactory.eINSTANCE.createImpact();
 		impact3.setLocation(task);
-		impact3.setId("impact-pay");
+		impact3.setId("impact-task");
 		
 		impact2.setCause(impact1);
-		impact3.setCause(impact2);
+		impact22.setCause(impact2);
+		impact3.setCause(impact22);
 
 		Violation violation = ImpactFactory.eINSTANCE.createViolation();
 		violation.setViolatedRule(rule);
