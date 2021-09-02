@@ -1,7 +1,5 @@
 package de.unistuttgart.ma.backend.app;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.unistuttgart.ma.backend.exceptions.MissingSystemModelException;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 /**
- * This controller provides the endpoints to be called by the sirius front end.
+ * Controller with end points to create, get and update the system models.
  * 
  * @author maumau
  *
@@ -26,35 +23,49 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
 @RestController
 public class ModelController {
 
-	private final ModelService service;
+	private final ModelService modelService;
 
 	public ModelController(@Autowired ModelService modelService) {
-		this.service = modelService;
+		assert (modelService != null);
+		this.modelService = modelService;
 	}
 
 	/**
-	 * Endpoint to update a saved model.
+	 * Create a new model.
 	 * 
-	 * @param xml updated model as XML
+	 * Imports architecture, slo rules and business process as specified in the
+	 * import request.
+	 * 
+	 * @param request Request to create a new model
+	 * @return xml representation of the newly created model
+	 * @throws ModelCreationFailedException if the model creation failed
+	 */
+	@PostMapping("/api/model")
+	public String createModel(@RequestBody ImportRequest request) throws ModelCreationFailedException {
+		return modelService.createModel(request);
+	}
+
+	/**
+	 * Update the model with the given id.
+	 * 
+	 * @param xml      the updated version of the model
+	 * @param systemId Id of the model
 	 */
 	@PostMapping("/api/model/{systemId}")
 	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
-		service.updateModel(xml, systemId);
+		modelService.updateModel(xml, systemId);
 	}
 
-	@PostMapping("/api/model")
-	public String createModel(@RequestBody ImportRequest request) throws ModelCreationFailedException {
-		try {
-			return service.createModel(request);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new ModelCreationFailedException("model creation failed : " + e.getMessage(), e);
-		}
-	}
-
+	/**
+	 * Get the model with the given id
+	 * 
+	 * @param systemId Id of the model
+	 * @return xml representation of the newly created model
+	 * @throws ModelCreationFailedException
+	 */
 	@GetMapping("/api/model/{systemId}")
 	public String getModel(@PathVariable String systemId) throws ModelCreationFailedException {
-		return service.getModel(systemId);
+		return modelService.getModel(systemId);
 	}
 
 	@GetMapping("/")
@@ -67,11 +78,4 @@ public class ModelController {
 	public ResponseEntity<String> modelCreationFailedException(ModelCreationFailedException exception) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
 	}
-
-	@ExceptionHandler(MissingSystemModelException.class)
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public ResponseEntity<String> missingSystemModelException(MissingSystemModelException exception) {
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-	}
-
 }

@@ -1,16 +1,15 @@
 package de.unistuttgart.ma.backend.repository;
 
-import java.util.List;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import de.unistuttgart.ma.saga.System;
-
-public interface SystemRepository extends MongoRepository<SystemItem, String>{
-
-
-
-	//List<System> findByArchitectureId(String id);
-
+/**
+ * A {@code SystemRepository} is a repository that manages the system models. Each system model
+ * is serialized into an {@link SystemItem} because the default serialization
+ * apparently can not handle the system models (c.f. {@link ImpactRepository}})
+ * 
+ * @author maumau
+ *
+ */
+public interface SystemRepository extends MongoRepository<SystemItem, String> {
 
 }

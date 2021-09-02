@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopify.graphql.support.ID;
 
+import de.unistuttgart.gropius.IssueLocation;
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
@@ -28,12 +29,12 @@ import de.unistuttgart.ma.impact.Violation;
 
 /**
  * 
- * Controller that receives an alert, form an SLO monitoring tool.
+ * Controller with an end point to receive alerts from a monitoring tool.
  * 
  * Upon receiving an alert it calculates the impacts of the reported violation,
- * creates an issue for each top level impact and links each created issue to
- * the issue that the slo manager (solomon) supposedly created for the initial
- * slo violation.
+ * creates an issue for each impact that reaches the business process and links
+ * each created issue to the issue that the SLA manager (solomon) supposedly
+ * created for the initial violation.
  * 
  * TODO : currently, gropius can only attach issues to components of interface.
  * however the hereby calculated impact is on the business process. until there
@@ -48,31 +49,36 @@ import de.unistuttgart.ma.impact.Violation;
 @RestController
 public class AlertController {
 
-	private final CalculateNotificationService service;
+	private final CalculateNotificationService notificationService;
 	private final CreateIssueService issueService;
 	private final SystemRepositoryProxy systemRepoProxy;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	public AlertController(@Autowired CalculateNotificationService service,
+	public AlertController(@Autowired CalculateNotificationService notificationService,
 			@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired CreateIssueService issueService) {
-		this.service = service;
+		assert (notificationService != null && systemRepoProxy != null && issueService != null);
+		this.notificationService = notificationService;
 		this.systemRepoProxy = systemRepoProxy;
 		this.issueService = issueService;
 	}
 
 	/**
+	 * Receive alerts, get the violation, calculate its impacts and create issues.
 	 * 
+	 * Delegates the latter two taks to the respective services.
 	 * 
 	 * @param alert the alert
-	 * @throws IssueCreationFailedException
-	 * @throws IssueLinkageFailedException
+	 * @throws IssueCreationFailedException if an issue could not be created
+	 * @throws IssueLinkageFailedException  if an issue could not be linked
 	 */
 	@PostMapping("/api/alert")
 	public void receiveAlert(@RequestBody Alert alert)
 			throws IssueCreationFailedException, IssueLinkageFailedException {
-
-		logger.info(String.format("receive alert for %s", alert.getSloName()));
+		if (alert == null) {
+			throw new IllegalArgumentException("Alert is null");
+		}
+		logger.info(String.format("received alert for SLO rule %s", alert.getSloName()));
 
 		String sloId = alert.getSloId();
 		String archId = alert.getGropiusProjectId();
@@ -87,15 +93,14 @@ public class AlertController {
 		v.setThreshold(alert.getActualValue());
 		v.setStartTime(alert.getAlertTime());
 
-		Set<Notification> notes = service.calculateImpacts(v);
+		Set<Notification> notes = notificationService.calculateImpacts(v);
 		logger.info(String.format("calculated %d impacts", notes.size()));
 
 		for (Notification notification : notes) {
-			// IssueLocation location = notification.getTopLevelImpact().getLocation(); //
-			// in theory.
-			
-			
-			ID issueId = issueService.createIssue(notification, rule.getGropiusComponent());
+			// TODO : if ever possible do attach issue to more suitable location
+			IssueLocation location = rule.getGropiusComponent();
+
+			ID issueId = issueService.createIssue(notification, location);
 			issueService.linkIssue(issueId, relatedIssueId);
 		}
 	}

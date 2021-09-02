@@ -1,5 +1,16 @@
 package de.unistuttgart.ma.backend.importer.slo;
 
+import de.unistuttgart.gropius.slo.SloRule;
+
+/**
+ * A SLO rule from the Solomon tool.
+ * 
+ * It is very flat, as in all references to the architecture are just string IDs. 
+ * It must be transformed into a proper {@link SloRule}} to be of use. 
+ * 
+ * @author maumau
+ *
+ */
 public class FlatSolomonRule {  
 	private String id;
 	private String name;
@@ -73,6 +84,4 @@ public class FlatSolomonRule {
 	public double getThreshold() {
 		return threshold;
 	}
-	
-	
 }

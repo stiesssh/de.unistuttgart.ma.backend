@@ -24,8 +24,7 @@ import de.unistuttgart.ma.saga.SagaPackage;
 import de.unistuttgart.ma.saga.System;
 
 /**
- * responsible for parsing input to a system instance and save that instance to
- * the repository
+ * Creates, updates and get models.
  * 
  * @author maumau
  *
@@ -37,22 +36,35 @@ public class ModelService {
 	private final ResourceSet set;
 
 	public ModelService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ResourceSet set) {
+		assert (systemRepoProxy != null & set != null);
 		this.systemRepoProxy = systemRepoProxy;
 		this.set = set;
 
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("saga", new EcoreResourceFactoryImpl());
+		
+		@SuppressWarnings("unused")
 		SagaPackage packageInstance = SagaPackage.eINSTANCE;
 	}
 
-	public String getIdForSystemModel(String filename) {
-		return systemRepoProxy.getIdForFilename(filename);
-	}
-	
-	public String getModel(String systemId) {
-		return systemRepoProxy.findXMLById(systemId);
+	/**
+	 * Get the model with the given id.
+	 * 
+	 * @param modelId
+	 * @return xml representation of the model
+	 */
+	public String getModel(String modelId) {
+		return systemRepoProxy.findXMLById(modelId);
 	}
 
-	public String createModel(ImportRequest request) throws IOException, ModelCreationFailedException {
+	/**
+	 * Create new model by importing architecture, slo rules and process as
+	 * specified in the import request and save it to the database.
+	 * 
+	 * @param request request to create a new model
+	 * @return xml representation of the new model
+	 * @throws ModelCreationFailedException if the creation of the model failed
+	 */
+	public String createModel(ImportRequest request) throws ModelCreationFailedException {
 		// collect model elements with importers
 		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
 		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment());
@@ -70,49 +82,54 @@ public class ModelService {
 		res.getContents().add(system);
 
 		// save to db and return
-		String id = systemRepoProxy.save(system);
-		return systemRepoProxy.findXMLById(id);
-	}
-
-	
-	/**
-	 * 
-	 * @param xml
-	 * @param systemId
-	 */
-	public void updateModel(String xml, String systemId) {
-		systemRepoProxy.updateModel(xml, systemId);
-	}
-	
-	/**
-	 * import SLO rules.
-	 * 
-	 * @param url
-	 * @param env
-	 * @return a set of Slo rules.
-	 * @throws ModelCreationFailedException 
-	 */
-	protected Set<SloRule> getSloRules(String url, String env) throws ModelCreationFailedException {
-		return new SolomonImporter(url, env).parse();
+		try {
+			String id = systemRepoProxy.save(system);
+			return systemRepoProxy.findXMLById(id);
+		} catch (IOException e) {
+			throw new ModelCreationFailedException("Could not save model to databas", e);
+		}
 	}
 
 	/**
-	 * import components and interfaces from gropius.
+	 * Update the model with the given id.
 	 * 
-	 * @param url
-	 * @param projectId
-	 * @return components and their interfaces
-	 * @throws ModelCreationFailedException 
+	 * @param xml	xml representation of the updated model.
+	 * @param modelId id of the model to update.
 	 */
-	protected Project getArchitecture(String url, String projectId) throws ModelCreationFailedException {
-		return new GropiusImporter(url, projectId).parse();
+	public void updateModel(String xml, String modelId) {
+		systemRepoProxy.updateModel(xml, modelId);
 	}
 
 	/**
-	 * import bpmn process.
+	 * Get Slo rules from solomon
 	 * 
-	 * @param url
-	 * @return a bpmn process
+	 * @param solomonUrl	url of the solomon backend
+	 * @param env	parameter becasue solomon wants it. 
+	 * @return a set of Slo rules
+	 * @throws ModelCreationFailedException if the slo rules could not be retrieved
+	 */
+	protected Set<SloRule> getSloRules(String solomonUrl, String env) throws ModelCreationFailedException {
+		return new SolomonImporter(solomonUrl, env).parse();
+	}
+
+	/**
+	 * Get an architecture from gropius.
+	 * 
+	 * @param gropiusUrl	url of the gropius backend
+	 * @param projectId		id of the project to access
+	 * @return a gropius project with its components and interface, i.e. the architecture.
+	 * @throws ModelCreationFailedException if the architecture could not be retrieved
+	 */
+	protected Project getArchitecture(String gropiusUrl, String projectId) throws ModelCreationFailedException {
+		return new GropiusImporter(gropiusUrl, projectId).parse();
+	}
+
+	/**
+	 * Get a bpmn process. 
+	 * 
+	 * @param bpmn xml representation of a bpmn process
+	 * @return	bpmn process 
+	 * @throws ModelCreationFailedException if the process could not be retrieved
 	 */
 	protected Process getProcess(String bpmn) throws ModelCreationFailedException {
 		return new BPMNImporter(bpmn).parse();

@@ -1,7 +1,8 @@
 package de.unistuttgart.ma.backend.exceptions;
 
 /**
- * Indicates that there was an alert that violated an SLO that did not exist. 
+ * A {@code IssueLinkageFailedException} indicates that the linkage of a Gropius issue to another failed.
+ *  
  * @author maumau
  *
  */

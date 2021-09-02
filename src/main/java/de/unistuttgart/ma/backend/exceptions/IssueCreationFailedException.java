@@ -1,7 +1,8 @@
 package de.unistuttgart.ma.backend.exceptions;
 
 /**
- * Indicates that there was an alert that violated an SLO that did not exist. 
+ * A {@code IssueCreationFailedException} indicates that the creation of a Gropius issue failed.  
+ * 
  * @author maumau
  *
  */

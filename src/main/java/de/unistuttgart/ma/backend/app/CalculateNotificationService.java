@@ -24,7 +24,7 @@ import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
 
 /**
- * calculates impact after receiving alert about and violation
+ * Responsible for calculating the impacts of a violation.
  * 
  * @author maumau
  *
@@ -34,27 +34,33 @@ public class CalculateNotificationService {
 
 	private final SystemRepositoryProxy systemRepoProxy;
 	private final ImpactRepository impactRepo;
-	
-	public CalculateNotificationService(@Autowired SystemRepositoryProxy systemRepoProxy, @Autowired ImpactRepository impactRepo) {
+
+	public CalculateNotificationService(@Autowired SystemRepositoryProxy systemRepoProxy,
+			@Autowired ImpactRepository impactRepo) {
+		assert (systemRepoProxy != null && impactRepo != null);
 		this.systemRepoProxy = systemRepoProxy;
 		this.impactRepo = impactRepo;
 	}
 
 	/**
+	 * Calculate the impacts of a violation.
 	 * 
-	 * Compute the impact of a violation and store it in the repository
+	 * Hops through the model of the system to trace how the violation might
+	 * propagate. Each trace is calculated as a chain of impacts. Each impact that
+	 * reaches the business process is wrapped into a notification and returned.
 	 * 
-	 * @param violation reported violation
+	 * @param violation violation to calculate impacts for
+	 * @return notification for each impact chain that reaches the business process
 	 */
 	public Set<Notification> calculateImpacts(Violation violation) {
+		if (violation == null) {
+			throw new IllegalArgumentException("violation must not be null");
+		}
 
 		Set<Notification> notes = new HashSet<Notification>();
-		
-		
+
 		String architectureId = violation.getViolatedRule().getGropiusProject().getId();
 		System system = systemRepoProxy.findByArchitectureId(architectureId);
-
-
 
 		Queue<QueueItem> queue = new LinkedList<QueueItem>();
 		queue.addAll(makeInitialItems(violation));
@@ -67,11 +73,11 @@ public class CalculateNotificationService {
 			ComponentInterface current = currentItem.getLocationAsFace();
 
 			// always cause new impact at current
-			Impact causedImpact = makeImpact(currentItem.getCause(), current); 
+			Impact causedImpact = makeImpact(currentItem.getCause(), current);
 
 			Set<SagaStep> nextSteps = getNextLevel(current, system);
 			if (nextSteps.isEmpty()) {
-				// traverse architecture
+				// stay at architecture
 				EList<Component> consumers = current.getConsumedBy();
 				for (Component component : consumers) {
 					for (ComponentInterface provided : component.getInterfaces()) {
@@ -93,12 +99,10 @@ public class CalculateNotificationService {
 
 			// always cause new impact at current
 			Impact causedImpact = makeImpact(currentItem.getCause(), current);
-			
+
 			Impact topLevelImpact = makeImpact(causedImpact, current.getTask());
 
-			//notificationRepoProxy.save(topLevelImpact, system.getId());
 			Notification note = ImpactFactory.eINSTANCE.createNotification();
-			//note.setId(value);
 			note.setRootCause(violation);
 			note.setTopLevelImpact(topLevelImpact);
 			notes.add(note);
@@ -106,7 +110,22 @@ public class CalculateNotificationService {
 		return notes;
 	}
 
+	/**
+	 * Get the saga steps realized with the given component interface.
+	 * 
+	 * Get the saga steps by looking them up in the system model. The given
+	 * interface must be part of the system model.
+	 * 
+	 * @param face   the interface whose steps to get
+	 * @param system model of the system
+	 * @return set of saga steps realized with face.
+	 */
 	protected Set<SagaStep> getNextLevel(ComponentInterface face, System system) {
+		assert (face != null && system != null);
+		if (!system.getComponentInterfaceById(face.getId()).equals(face)) {
+			throw new IllegalArgumentException(String.format("Interface %s does not belong to system %s", face.getId(), system.getId()));
+		}
+
 		Set<SagaStep> nexts = new HashSet<>();
 
 		// TODO : are these really the same objects, or do the just 'look' the same??
@@ -123,33 +142,31 @@ public class CalculateNotificationService {
 
 	/**
 	 * 
-	 * Create the initial Items for the Queue.
+	 * Create queue items for the initial impacts.
 	 *
-	 * Violations may happen at a Component as well as an Interface. However the
-	 * impact computation operates on Interfaces. As such in case of a violation at
-	 * a component, the initial items are that components provided interfaces. With
-	 * 'cause' being the initial violation. In case the violation happens at an
-	 * interface, the initial violations are the provided interfaces of the
-	 * consuming components, or else i would 'loose' the actual violation.
+	 * A violation may happen at a Component as well as at an Interface. However the
+	 * impact computation operates on Interfaces. In case of a violation at a
+	 * component, the initial items are the interfaces provided by that component.
 	 * 
 	 * (because queueItem = previous impact x (small) location, but if location is
 	 * location of actual violation, then previous impact is null and everything
 	 * breaks...)
 	 * 
-	 * @param violation
-	 * @return
+	 * @param violation the violation
+	 * @return queue items for the initial impacts
 	 */
 	private Set<QueueItem> makeInitialItems(Violation violation) {
 
 		Set<QueueItem> initialItems = new HashSet<>();
 
-		// "finer grain" (interface is set)
+		// "finer grain" (interface is set) i
+		// TODO i think is is wrong....
 		if (violation.getViolatedRule().getGropiusComponentInterface() != null) {
 			Set<Component> impactedComponents = new HashSet<>();
 			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
-			
+
 			Impact initialImpact = makeImpact(null, violation.getViolatedRule().getGropiusComponentInterface());
-			
+
 			for (Component c : impactedComponents) {
 				for (ComponentInterface face : c.getInterfaces()) {
 					initialItems.add(new QueueItem(initialImpact, face));
@@ -161,7 +178,7 @@ public class CalculateNotificationService {
 			EList<ComponentInterface> faces = violation.getViolatedRule().getGropiusComponent().getInterfaces();
 			for (ComponentInterface componentInterface : faces) {
 				Impact initialImpact = makeImpact(null, componentInterface);
-				
+
 				for (Component c : componentInterface.getConsumedBy()) {
 					for (ComponentInterface face : c.getInterfaces()) {
 						initialItems.add(new QueueItem(initialImpact, face));
@@ -174,16 +191,24 @@ public class CalculateNotificationService {
 
 		return initialItems;
 	}
-	
+
+	/**
+	 * Creates a new impact and saves it to the impact repository.
+	 * 
+	 * @param cause    cause of the impact
+	 * @param location location of the impact
+	 * @return new impact, that is also saved to the impact repository.
+	 */
 	private Impact makeImpact(Impact cause, EObject location) {
+		assert (location != null);
 		Impact causedImpact = ImpactFactory.eINSTANCE.createImpact();
 		causedImpact.setCause(cause);
 		causedImpact.setLocation(location);
-		
+
 		ImpactItem item = impactRepo.save(new ImpactItem(causedImpact));
-		
+
 		causedImpact.setId(item.getId());
-		
+
 		return causedImpact;
 	}
 }

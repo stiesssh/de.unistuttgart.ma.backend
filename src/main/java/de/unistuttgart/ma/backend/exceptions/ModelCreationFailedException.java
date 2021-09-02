@@ -1,7 +1,8 @@
 package de.unistuttgart.ma.backend.exceptions;
 
 /**
- * Indicates that there was an alert that violated an SLO that did not exist. 
+ * A {@code ModelCreationFailedException } indicates that the creation of a new model failed.
+ * 
  * @author maumau
  *
  */

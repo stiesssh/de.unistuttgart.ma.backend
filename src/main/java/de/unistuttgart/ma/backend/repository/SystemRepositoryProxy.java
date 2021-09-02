@@ -24,8 +24,11 @@ import de.unistuttgart.ma.saga.SagaPackage;
 import de.unistuttgart.ma.saga.System;
 
 /**
+ * A {@code SystemRepositoryProxy} is a Proxy to the {@link SystemRepository}.
  * 
- * 
+ * It translates the {@link System}s to {@link SystemItem}s to save them in the
+ * repository and vice versa. All acces to the repository should happen through
+ * this proxy.
  * 
  * @author maumau
  *
@@ -39,22 +42,21 @@ public class SystemRepositoryProxy {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public SystemRepositoryProxy(@Autowired SystemRepository repository, @Autowired ResourceSet set) {
+		assert (repository != null && set != null);
 		this.repository = repository;
 		this.set = set;
 
 		this.projectId2SystemId = new HashMap<>();
-		this.systemId2ResourceUri = new HashMap<>();
+		//this.systemId2ResourceUri = new HashMap<>();
 
-		// org.eclipse.emf.ecore.xmi.PackageNotFoundException: Package with uri
-		// 'http://www.example.org/saga' not found
-		SagaPackage p = SagaPackage.eINSTANCE;
+		SagaPackage e = SagaPackage.eINSTANCE;
 
 		init();
 	}
 
 	/**
-	 * load the architecture id to system id / system id to resource mappings for
-	 * all system in the database
+	 * Load the content of the {@code systemId2ResourceUri} and of the
+	 * {@code projectId2SystemId} mappings from the repository.
 	 */
 	public void init() {
 		List<SystemItem> items = repository.findAll();
@@ -63,8 +65,9 @@ public class SystemRepositoryProxy {
 			try {
 				System system = deserializeSystem(item.getContent(), item.getFilename());
 				projectId2SystemId.put(system.getArchitecture().getId(), system.getId());
-				systemId2ResourceUri.put(system.getId(), item.getFilename());
-				logger.info(String.format("load model %s for architecture %s.", system.getId(), system.getArchitecture().getId()));
+				//systemId2ResourceUri.put(system.getId(), item.getFilename());
+				logger.info(String.format("load model %s for architecture %s.", system.getId(),
+						system.getArchitecture().getId()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -72,21 +75,28 @@ public class SystemRepositoryProxy {
 
 	}
 
-	// TODO : 1 : n mapping
+	/**
+	 * maps ids of gropius projects to the ids of the system models, because alerts
+	 * only know the gropius project but the impact calculation needs the model of
+	 * the entire system
+	 */
 	private final Map<String, String> projectId2SystemId;
 
-	// systemID -> FileName
-	private final Map<String, String> systemId2ResourceUri;
+	/** TODO : why does this exist?? */
+	//private final Map<String, String> systemId2ResourceUri;
 
 	/**
-	 * save a system to the repository.
+	 * Save a system model to the repository.
 	 * 
-	 * systems are serialised to xml and that xml is saved in the database.
+	 * The model is serialised to xml with the ecore utilities and that xml is saved to the repository.
 	 * 
-	 * @param system the system to be saved
+	 * @param system the system model to be saved
 	 * @throws IOException if the model could not be saved
 	 */
 	public String save(de.unistuttgart.ma.saga.System system) throws IOException {
+		if (system == null) {
+			throw new IllegalArgumentException("system is null.");
+		}
 		if (system.eResource() == null) {
 			throw new IllegalArgumentException("system is not contained in any reource.");
 		}
@@ -96,7 +106,7 @@ public class SystemRepositoryProxy {
 		}
 		if (!repository.existsById(system.getId())) {
 			SystemItem item = repository.save(new SystemItem(system.getId(), null, system.getName()));
-			systemId2ResourceUri.put(item.getId(), item.getFilename());
+			//systemId2ResourceUri.put(item.getId(), item.getFilename());
 		}
 
 		SystemItem item = repository.findById(system.getId()).get();
@@ -110,7 +120,8 @@ public class SystemRepositoryProxy {
 	/**
 	 * update model by replacing its xml with another one.
 	 * 
-	 * if there is no model matching the given systemId, the model is saved to the db as a new entry. 
+	 * if there is no model matching the given systemId, the model is saved to the
+	 * db as a new entry.
 	 * 
 	 * @param xml      the model as xml
 	 * @param systemId id of the system in the model
@@ -134,7 +145,7 @@ public class SystemRepositoryProxy {
 	 */
 	public String getIdForSystem(System system) throws IOException {
 		SystemItem item = repository.save(new SystemItem(null, null, system.getName()));
-		systemId2ResourceUri.put(item.getId(), item.getFilename());
+		//systemId2ResourceUri.put(item.getId(), item.getFilename());
 		return item.getId();
 	}
 
@@ -182,17 +193,6 @@ public class SystemRepositoryProxy {
 	}
 
 	/**
-	 * reserve an entry in the database for the model.
-	 * 
-	 * @param fileuri uri of the file at the frontend.
-	 * @return an id
-	 */
-	public String getIdForFilename(String fileuri) {
-		SystemItem item = new SystemItem(null, null, fileuri);
-		return repository.save(item).getId();
-	}
-
-	/**
 	 * Serialise system to ecore xml.
 	 * 
 	 * @param system
@@ -217,6 +217,7 @@ public class SystemRepositoryProxy {
 	 * @throws IOException
 	 */
 	protected System deserializeSystem(String xml, String filename) throws IOException {
+		assert(xml != null && filename != null);
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("saga", new EcoreResourceFactoryImpl());
 		InputStream targetStream = new ByteArrayInputStream(xml.getBytes());
 

@@ -104,7 +104,7 @@ public class RepositoryTest extends TestWithRepo {
 		// prepare system with resource
 		System emptySystem = SagaFactory.eINSTANCE.createSystem();
 		String filename = "foo.saga";
-		String id = systemRepoProxy.getIdForFilename(filename);
+		emptySystem.setName(filename);
 		
 		Project arch = GropiusFactory.eINSTANCE.createProject();
 		arch.setId("someId");
@@ -112,10 +112,9 @@ public class RepositoryTest extends TestWithRepo {
 		
 		Resource resource = set.createResource(URI.createPlatformResourceURI(filename, false));
 		resource.getContents().add(emptySystem);		
-		emptySystem.setId(id);
 		
 		// execute & assert
-		systemRepoProxy.save(emptySystem);
+		String id = systemRepoProxy.save(emptySystem);
 		
 		assertEquals(1, systemRepo.count());
 		

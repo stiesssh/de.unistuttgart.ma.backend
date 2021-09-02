@@ -1,13 +1,9 @@
 package de.unistuttgart.ma.backend.app;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 
-import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
-import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,13 +35,10 @@ import de.unistuttgart.ma.backend.utility.ViolationSerializer;
 import de.unistuttgart.ma.impact.Impact;
 import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
-import de.unistuttgart.ma.saga.IdentifiableElement;
 import de.unistuttgart.ma.saga.SagaStep;
 
 /**
- * creates gropius issues for impacts.
- * 
- * triggered by new top level impact.
+ * Create a Gropius issues for an impact that reached the business process.
  * 
  * @author maumau
  *
@@ -53,14 +46,17 @@ import de.unistuttgart.ma.saga.SagaStep;
 @org.springframework.stereotype.Component
 public class CreateIssueService {
 
+	// for Serialization
 	private final ObjectMapper mapper;
 	private final SimpleModule module;
 
-	private final GropiusApiQuerier querier;
-
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
+	private final GropiusApiQuerier querier;
+
 	public CreateIssueService(@Value("${gropius.url}") String uri) {
+		assert (uri != null);
+
 		module = new SimpleModule();
 
 		module.addSerializer(Notification.class, new NotificationSerializer(Notification.class));
@@ -78,11 +74,16 @@ public class CreateIssueService {
 	}
 
 	/**
+	 * Create an issue for the given notification at the given issue location.
+	 * 
+	 * If an open issue that matches the notification (i.e. violation to same SLO
+	 * rule, same locations impacted) already exists, no new issues is created.
+	 * return the id of the matching and already existing issue instead.
 	 * 
 	 * @param notification notification to create issue for
 	 * @param location     issue location to create new issue at
-	 * @return id of created issue
-	 * @throws IssueCreationFailedException
+	 * @return id of the notification's issue
+	 * @throws IssueCreationFailedException if the creation of the issue failed
 	 */
 	public ID createIssue(Notification notification, IssueLocation location) throws IssueCreationFailedException {
 
@@ -100,13 +101,39 @@ public class CreateIssueService {
 		MutationQuery mutation = GropiusApiQueries.getCreateIssueMutation(location.getId(), body, title);
 
 		ID id = querier.queryCreateIssueMutation(mutation).getCreateIssue().getIssue().getId();
-		
+
 		logger.info(String.format("Create Issue. ID : %s, Title : %s", id.toString(), title));
 
 		return id;
 	}
 
+	/**
+	 * Link one gropius issue to another.
+	 * 
+	 * The origin issue is the issue that represents the notification and the
+	 * destination issue is the one for the violation of the SLO rule.
+	 * 
+	 * @param origin      source issue of the link
+	 * @param destination issue to be linked to
+	 * @throws IssueLinkageFailedException If the linking failed
+	 */
+	public void linkIssue(ID origin, ID destination) throws IssueLinkageFailedException {
+		assert (origin != null && destination != null);
+		MutationQuery mutation = GropiusApiQueries.getLinkIssueMutation(origin, destination);
+		querier.queryLinkIssueMutation(mutation);
+	}
+
+	/**
+	 * Look at the open issues at the given location. If any of them matches the
+	 * given notification, return that issue.
+	 * 
+	 * @param note     notification to match
+	 * @param location location of issues
+	 * @return an issue that matches the given notification, or null if no such
+	 *         issue exists
+	 */
 	private Issue getOpenIssueOnLocationForNotification(Notification note, IssueLocation location) {
+		assert (note != null && location != null);
 		try {
 			Query query = querier.queryQuery(GropiusApiQueries.getOpenIssueOnComponentQuery(new ID(location.getId())));
 			if (!query.getNode().getGraphQlTypeName().equals("Component")) {
@@ -123,38 +150,36 @@ public class CreateIssueService {
 				}
 			}
 		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info(String.format("Could not get open issues at location %s because of %s", location.getName(),
+					e.getMessage()));
 		}
 		return null;
 	}
 
 	/**
+	 * Check whether a Gropius issue body represents a certain notification.
 	 * 
-	 * if any things goes wrong during comparison, treat them as different.
+	 * It does, if the violated Slo rules and the trace of impacted location is the
+	 * same. For now its enough to check the rule and the top most impact.
+	 * 
+	 * If any thing goes wrong during comparison, they are treated as different.
 	 * 
 	 * 
-	 * @param note
-	 * @param json
-	 * @return
+	 * @param note the notification
+	 * @param body body of a Gropius issue
+	 * @return true iff the issues represents the notification, false otherwise
 	 */
 	public boolean isSameIssue(Notification note, String body) {
-		
-		if (! (body.contains("[//]: # (") && body.contains(")"))) {
-			return false;
-		}
-		
-		String json = body.split("\\(")[1].split("\\)")[0];
+		assert (note != null && body != null);
 
 		try {
-			JsonNode node = mapper.readTree(json);
-			if(node.findPath("impactlocation").isMissingNode() ||
-					node.findPath("violatedrule").isMissingNode() ||
-					node.findPath("impactlocation").findPath("id").isMissingNode() ||
-					node.findPath("violatedrule").findPath("id").isMissingNode() ) {
+			JsonNode node = mapper.readTree(getNotificationRepresentation(body));
+			if (node.findPath("impactlocation").isMissingNode() || node.findPath("violatedrule").isMissingNode()
+					|| node.findPath("impactlocation").findPath("id").isMissingNode()
+					|| node.findPath("violatedrule").findPath("id").isMissingNode()) {
 				logger.error("wrong json schema, omitting an issue.");
 			}
-			
+
 			String locationId = node.findPath("impactlocation").findPath("id").asText();
 			String rootcauseId = node.findPath("violatedrule").findPath("id").asText();
 
@@ -162,27 +187,58 @@ public class CreateIssueService {
 			String noterootCauseId = note.getRootCause().getViolatedRule().getId();
 
 			return locationId.equals(noteLocationId) && rootcauseId.equals(noterootCauseId);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+		} catch (JsonProcessingException | IllegalArgumentException e) {
+			logger.debug(e.getMessage());
 		}
 		return false;
 	}
 
 	/**
-	 * Parse impact chain to json.
+	 * Extract that part of a gropius issue body, that represents the notification.
 	 * 
-	 * @param topLevelImpact head of the chain
-	 * @return json representation of the impact chain
-	 * @throws JsonProcessingException
+	 * @param body body of a gropius issue
+	 * @return string representation of the notification
 	 */
-	public String parseToJson(Notification topLevelImpact) throws JsonProcessingException {
-		return mapper.writeValueAsString(topLevelImpact);
+	private String getNotificationRepresentation(String body) {
+		assert (body != null);
+
+		if (!(body.contains("[//]: # (") && body.contains(")"))) {
+			throw new IllegalArgumentException(String.format("Not a valid body : %s", body));
+		}
+
+		String[] split1 = body.split("\\(");
+		if (split1.length < 2) {
+			throw new IllegalArgumentException(String.format("Not a valid body : %s", body));
+		}
+
+		String[] split2 = split1[1].split("\\)");
+		if (split2.length < 1) {
+			throw new IllegalArgumentException(String.format("Not a valid body : %s", body));
+		}
+
+		return split2[0];
 	}
 
 	/**
+	 * Serialise Notification to json.
 	 * 
-	 * @param json representation of impact chain
-	 * @return body for issue
+	 * @param note the notification
+	 * @return json representation of the notification
+	 * @throws JsonProcessingExceptionnote if the serialisation failed.
+	 */
+	public String parseToJson(Notification note) throws JsonProcessingException {
+		return mapper.writeValueAsString(note);
+	}
+
+	/**
+	 * Create a body for a gropius issue that contains a json represenation of the
+	 * given notification.
+	 * 
+	 * TODO : (re)add some additional human readable information?
+	 * 
+	 * @param note the notification
+	 * @return body for a gropius issue that contains a json representation of the
+	 *         notification note
 	 */
 	public String createBody(Notification note) {
 		StringBuilder sb = new StringBuilder();
@@ -208,31 +264,23 @@ public class CreateIssueService {
 	}
 
 	/**
+	 * Create a issue title for a notification.
 	 * 
-	 * Create Issue title for given impact.
-	 * 
-	 * Title concists of... TODO
-	 * 
-	 * @param topLevelImpact the impact to create a title for.
-	 * @return the title of the issue to be.
+	 * @param note the notification
+	 * @return a title for a gropius issue.
 	 */
-	protected String createTitle(Notification topLevelImpact) {
+	protected String createTitle(Notification note) {
+		assert (note != null);
 		StringBuilder sb = new StringBuilder();
-		//sb.append("[ ").append(Instant.now().toString()).append(" ]");
-		sb.append("Impact on ")
-			.append(topLevelImpact.getTopLevelImpact().getLocationContainerType())
-			.append(" ")
-			.append(topLevelImpact.getTopLevelImpact().getLocationContainerName())
-			.append(" at ")
-			.append(topLevelImpact.getTopLevelImpact().getLocationType())
-			.append(" ")
-			.append(topLevelImpact.getTopLevelImpact().getLocationName())
-			.append(" caused by Violation of SLO rule ");
-		sb.append(topLevelImpact.getRootCause().getViolatedRule().getName()).append(".");
-		
+
+		sb.append("Impact on ").append(note.getTopLevelImpact().getLocationContainerType()).append(" ")
+				.append(note.getTopLevelImpact().getLocationContainerName()).append(" at ")
+				.append(note.getTopLevelImpact().getLocationType()).append(" ")
+				.append(note.getTopLevelImpact().getLocationName()).append(" caused by Violation of SLO rule ");
+		sb.append(note.getRootCause().getViolatedRule().getName()).append(".");
+
 		return sb.toString();
 	}
-	
 
 	protected void appendHumanLocation(Object obj, StringBuilder sb) {
 		sb.append("* Location : **").append(obj.toString()).append("**").append("\n");
@@ -245,16 +293,5 @@ public class CreateIssueService {
 
 	protected void appendHumanPathStep(Impact impact, StringBuilder sb) {
 		sb.append("  * **").append(impact.getLocation().toString()).append("**").append("\n");
-	}
-
-	/**
-	 * 
-	 * @param origin
-	 * @param destination
-	 * @throws IssueLinkageFailedException
-	 */
-	public void linkIssue(ID origin, ID destination) throws IssueLinkageFailedException {
-		MutationQuery mutation = GropiusApiQueries.getLinkIssueMutation(origin, destination);
-		querier.queryLinkIssueMutation(mutation);
 	}
 }

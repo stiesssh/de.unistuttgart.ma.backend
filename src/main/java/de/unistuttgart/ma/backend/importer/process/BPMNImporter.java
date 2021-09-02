@@ -16,7 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
-
+/**
+ * A {@code BPMNImporter} imports a business process.
+ * 
+ * @author maumau
+ *
+ */
 public class BPMNImporter {
 
 	
@@ -25,7 +30,10 @@ public class BPMNImporter {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	
+	/**
+	 * Create a new importer that parses the given process. 
+	 * @param bpmn
+	 */
 	public BPMNImporter(String bpmn) {
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("bpmn2", new Bpmn2ResourceFactoryImpl());
 		ResourceSet set = new ResourceSetImpl();
@@ -33,6 +41,12 @@ public class BPMNImporter {
 		this.bpmn = bpmn;
 	}
 
+	/**
+	 * Get the process.
+	 * 
+	 * @return the process 
+	 * @throws ModelCreationFailedException if parsing the business process failed. 
+	 */
 	public Process parse() throws ModelCreationFailedException {
 		InputStream targetStream = new ByteArrayInputStream(bpmn.getBytes());
 		try {

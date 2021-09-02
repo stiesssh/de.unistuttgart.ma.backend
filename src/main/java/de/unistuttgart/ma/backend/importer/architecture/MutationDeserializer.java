@@ -10,6 +10,12 @@ import com.shopify.graphql.support.SchemaViolationError;
 
 import de.unistuttgart.gropius.api.Mutation;
 
+/**
+ * A {@code MutationDeserializer} deserialises a {@link Mutation}} from JSON.
+ * 
+ * @author maumau
+ *
+ */
 public class MutationDeserializer implements JsonDeserializer<Mutation>{
 	@Override
 	public Mutation deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {

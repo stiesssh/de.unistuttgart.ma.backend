@@ -2,11 +2,17 @@ package de.unistuttgart.ma.backend.rest;
 
 import java.time.LocalDateTime;
 
+/**
+ * An {@code Alert} reports the violation of a SLO rule. Usually it is reported
+ * from a monitoring tool, preferably Solomon.
+ * 
+ * @author maumau
+ *
+ */
 public class Alert {
-	public Alert() {}
-	
-	
-	
+	public Alert() {
+	}
+
 	public Alert(double actualValue, double actualPeriod, String alertName, String alertDescription,
 			LocalDateTime alertTime, String sloId, String sloName, String triggeringTargetName, String gropiusProjectId,
 			String gropiusComponentId, String issueId) {
@@ -24,50 +30,58 @@ public class Alert {
 		this.issueId = issueId;
 	}
 
-
-
 	double actualValue;
 	double actualPeriod;
-    String alertName;
-    String alertDescription;
-    LocalDateTime alertTime;
-    String sloId;
-    String sloName;
-    String triggeringTargetName;
-    String gropiusProjectId;
-    String gropiusComponentId;
-    String issueId;
-    
+	String alertName;
+	String alertDescription;
+	LocalDateTime alertTime;
+	String sloId;
+	String sloName;
+	String triggeringTargetName;
+	String gropiusProjectId;
+	String gropiusComponentId;
+	String issueId;
+
 	public String getAlertName() {
 		return alertName;
 	}
+
 	public String getAlertDescription() {
 		return alertDescription;
 	}
+
 	public LocalDateTime getAlertTime() {
 		return alertTime;
 	}
+
 	public String getSloId() {
 		return sloId;
 	}
+
 	public String getSloName() {
 		return sloName;
 	}
+
 	public String getTriggeringTargetName() {
 		return triggeringTargetName;
 	}
+
 	public String getGropiusProjectId() {
 		return gropiusProjectId;
 	}
+
 	public String getGropiusComponentId() {
 		return gropiusComponentId;
 	}
+
 	public double getActualValue() {
 		return actualValue;
 	}
+
 	public double getActualPeriod() {
 		return actualPeriod;
-	}   
+	}
+
 	public String getIssueId() {
 		return issueId;
 	}

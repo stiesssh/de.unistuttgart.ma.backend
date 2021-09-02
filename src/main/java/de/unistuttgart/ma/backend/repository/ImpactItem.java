@@ -1,17 +1,16 @@
 package de.unistuttgart.ma.backend.repository;
 
-import org.eclipse.bpmn2.Task;
 import org.springframework.data.annotation.Id;
 
-import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.ma.impact.Impact;
-import de.unistuttgart.ma.impact.ImpactFactory;
-import de.unistuttgart.ma.saga.SagaStep;
 
 /**
- * Item to be saved in the Impact DataBase.
+ * An {@code ImpactItem} is an item to be saved in the {@link ImpactRepository}.
  * 
- * Content is the actual impact, serialised into ecore xml format. 
+ * It consists of the impact location, its id and the id of its cause. The ids
+ * come from the database to ensure that they are unique.
+ * 
+ * In fact the unique ids are them main reason for persisting the impact at all.
  * 
  * @author maumau
  *
@@ -21,9 +20,10 @@ public class ImpactItem {
 	private String id;
 	private String cause;
 	private String location;
-	
-	public ImpactItem() {	}
-	
+
+	public ImpactItem() {
+	}
+
 	public ImpactItem(String id, String cause, String location) {
 		super();
 		this.id = id;
@@ -37,22 +37,19 @@ public class ImpactItem {
 		if (impact.getCause() != null) {
 			this.cause = impact.getCause().getId();
 		}
-		if (impact.getLocation() instanceof ComponentInterface) {
-			this.location = ((ComponentInterface) impact.getLocation()).getId();
-		} else 	if (impact.getLocation() instanceof Task) {
-			this.location = ((Task) impact.getLocation()).getId();
-		} if (impact.getLocation() instanceof SagaStep) {
-			this.location = ((SagaStep) impact.getLocation()).getId();
-		}
+		this.location = impact.getLocationId();
+
 	}
 
 	public String getId() {
 		return id;
 	}
+
 	public String getCause() {
 		return cause;
 	}
+
 	public String getLocation() {
 		return location;
-	}	
+	}
 }

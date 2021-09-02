@@ -109,14 +109,11 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 		JsonSchema schema = schemaFactory.getSchema(schemaStream);
 		Set<ValidationMessage> validationResult = schema.validate(json);
 
-		// print validation errors
+		// fail if validation not good
 		if (!validationResult.isEmpty()) {
 			validationResult.forEach(vm -> System.out.println(vm.getMessage()));
 			fail();
 		}
-		
-		// TODO : assert !?!?
-
 	}
 	
 	@Test
