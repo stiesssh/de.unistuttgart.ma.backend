@@ -1,0 +1,18 @@
+version: '3'
+services:
+
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+   
+  backend:
+    image: backend
+    ports:
+      - "8083:8080"
+    depends_on:
+      - mongo
+    environment:
+      MONGO_HOST: mongo
+      GROPIUS_URL: "http://localhost:8080/api"
+      FAKE_ISSUE_LOCATION: "5ece9ed4662c5013"

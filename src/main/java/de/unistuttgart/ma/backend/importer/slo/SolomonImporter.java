@@ -1,58 +1,117 @@
 package de.unistuttgart.ma.backend.importer.slo;
 
-import java.io.IOException;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.shopify.graphql.support.ID;
 
 import de.unistuttgart.gropius.slo.SloRule;
+import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.architecture.DataMapper;
+import de.unistuttgart.gropius.Component;
+import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.slo.SloFactory;
 
-public class SolomonImporter implements SloImporter {
-	
-	private final DataMapper gropiusmapper;
-	
-	private final SolomonApiQuerier querier;
-	
-	// TODO : this is a DeploymentEnvironment (currently either 'aws' or 'kubernetes', vgl. solomon/**/slo-rule.model.ts)
-	private final String environmentParameter; 
+/**
+ * A {@code SolomonImporter} imports SLO rules from the Solomon tool.
+ * 
+ * It queries the Solomon tool for the SLO rules and transforms the response
+ * into instances of the SLO ecore model. The importer relies on the
+ * {@link DataMapper}, that the gropius importer populates. There for the
+ * architecture must be imported before the SLO ruless, or else the SLO rules
+ * can not be merged properly and will be ignored.
+ *
+ * @author maumau
+ *
+ */
+public class SolomonImporter {
 
-	public SolomonImporter(String uri, String environmentParameter) {
+	private final DataMapper gropiusmapper;
+	private final SolomonApiQuerier querier;
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	/** c.f. solomon/.../slo-rule.model.ts) */
+	private final String environment;
+
+	/**
+	 * Create a new importer that imports SLO rules from the Solomon tool at
+	 * {@code uri}.
+	 * 
+	 * @param uri         the uri of the Solomon tool
+	 * @param environment environment to get rules for
+	 */
+	public SolomonImporter(String uri, String environment) {
 		this.querier = new SolomonApiQuerier(uri);
-		this.environmentParameter = environmentParameter;
+		this.environment = environment;
 		this.gropiusmapper = DataMapper.getMapper();
 	}
-	
-	@Override
-	public Set<SloRule> parse() {
+
+	/**
+	 * Get the Slo rules.
+	 * 
+	 * Query the Solomon tool for the slo rules of the given environment and parse
+	 * the rules in the response to a model according to the SLo ecore model.
+	 * 
+	 * @return the SLO rules.
+	 * @throws ModelCreationFailedException if the creation of the Slo rules part of
+	 *                                      the model failed
+	 */
+	public Set<SloRule> parse() throws ModelCreationFailedException {
 		try {
-			Set<SloFlatRule> slorules = querier.query(environmentParameter); 
+			Set<FlatSolomonRule> slorules = querier.querySolomon(environment);
 			return parse(slorules);
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException(e);
+		} catch (Exception e) {
+			throw new ModelCreationFailedException("Could not import slos : " + e.getMessage(), e);
 		}
 	}
-	
-	private Set<SloRule> parse(Set<SloFlatRule> flatRules) {
+
+	/**
+	 * Parse the SLO rules from the Solomon tool to SLO rules according to the SLO
+	 * rule ecore model.
+	 * 
+	 * Parsing the rules also includes correctly linking them to other elements of
+	 * the model. A SLO rule is attached to {@link Component} or to a
+	 * {@link ComponentInterface}. If the locations of SLO rules from the Solomon
+	 * tool do not match any known architecture elements, the rule is skipped.
+	 * 
+	 * @param flatRules the rules from the Solomon tool
+	 * @return the SLO rules.
+	 */
+	private Set<SloRule> parse(Set<FlatSolomonRule> flatRules) {
 		Set<SloRule> rules = new HashSet<>();
-		for (SloFlatRule flatRule : flatRules) {
-			
-			SloRule rule = SloFactory.eINSTANCE.createSloRule(); 
-			
-			rule.setId(flatRule.getId());
-			rule.setName(flatRule.getName());
-			rule.setPeriod(0);		//TODO
-			rule.setThreshold(0);	//TODO
-			
-			rule.setGropiusProject(gropiusmapper.getProjectByID(new ID(flatRule.getGropiusProjectId())));
-			rule.setGropiusComponent(gropiusmapper.getComponentByID(new ID(flatRule.getGropiusComponentId())));
-			rule.setGropiusComponentInterface(gropiusmapper.getComponentInterfaceByID(new ID(flatRule.getGropiusComponentInterfaceId())));
-			
-			rules.add(rule);
+		for (FlatSolomonRule flatRule : flatRules) {
+			try {
+				Component component = gropiusmapper.getComponentByID(new ID(flatRule.getGropiusComponentId()));
+				for (ComponentInterface iface : component.getInterfaces()) {
+
+					SloRule rule = SloFactory.eINSTANCE.createSloRule();
+
+					rule.setGropiusComponentInterface(iface);
+					rule.setGropiusComponent(component);
+					rule.setGropiusProject(gropiusmapper.getProjectByID(new ID(flatRule.getGropiusProjectId())));
+
+					rule.setId(flatRule.getId());
+					rule.setName(flatRule.getName());
+					rule.setPeriod(flatRule.getPeriod());
+					rule.setThreshold(flatRule.getThreshold());
+
+					rule.setPresetOption(flatRule.getPreset());
+					rule.setStatisticsOption(flatRule.getStatistic());
+					rule.setComparisonOperator(flatRule.getComparisonOperator());
+
+					rules.add(rule);
+
+					logger.info(String.format("Create SloRule %s.", flatRule.getName()));
+				}
+			} catch (NoSuchElementException e) {
+				logger.info(String.format("Skip SloRule %s because of %s.", flatRule.getName(),
+						e.getClass().getCanonicalName()));
+			}
 		}
 		return rules;
 	}

@@ -2,36 +2,54 @@ package de.unistuttgart.ma.backend.repository;
 
 import org.springframework.data.annotation.Id;
 
+import de.unistuttgart.ma.impact.Impact;
+
 /**
- * Item to be saved in the Impact DataBase.
+ * An {@code ImpactItem} is an item to be saved in the {@link ImpactRepository}.
  * 
- * Content is the actual impact, serialised into ecore xml format. 
+ * It consists of the impact location, its id and the id of its cause. The ids
+ * come from the database to ensure that they are unique.
+ * 
+ * In fact the unique ids are them main reason for persisting the impact at all.
  * 
  * @author maumau
  *
  */
 public class ImpactItem {
 	@Id
-	private final String id;
-	private final String systemId;
-	private final String content;
-	
-	public ImpactItem(String id, String systemId, String content) {
+	private String id;
+	private String cause;
+	private String location;
+
+	public ImpactItem() {
+	}
+
+	public ImpactItem(String id, String cause, String location) {
 		super();
 		this.id = id;
-		this.systemId = systemId;
-		this.content = content;
+		this.cause = cause;
+		this.location = location;
+	}
+
+	public ImpactItem(Impact impact) {
+		super();
+		this.id = null;
+		if (impact.getCause() != null) {
+			this.cause = impact.getCause().getId();
+		}
+		this.location = impact.getLocationId();
+
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public String getSystemId() {
-		return systemId;
+	public String getCause() {
+		return cause;
 	}
 
-	public String getContent() {
-		return content;
+	public String getLocation() {
+		return location;
 	}
 }

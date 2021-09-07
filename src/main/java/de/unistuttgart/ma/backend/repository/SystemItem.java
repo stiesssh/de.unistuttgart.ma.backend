@@ -3,7 +3,7 @@ package de.unistuttgart.ma.backend.repository;
 import org.springframework.data.annotation.Id;
 
 /**
- * Item to be saved in the System DataBase.
+ * A {@code SystemItem} is an item to be saved in the {@link SystemRepository}.
  * 
  * Content is the actual system, serialised into ecore xml format. 
  * 

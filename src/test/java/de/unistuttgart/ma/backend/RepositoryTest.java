@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -17,10 +20,12 @@ import org.springframework.test.context.ContextConfiguration;
 
 import de.unistuttgart.gropius.GropiusFactory;
 import de.unistuttgart.gropius.Project;
+import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.saga.SagaFactory;
 import de.unistuttgart.ma.saga.System;
-import de.unistuttgart.ma.saga.impact.Impact;
-import de.unistuttgart.ma.saga.impact.Violation;
+import de.unistuttgart.ma.backend.repository.ImpactItem;
+import de.unistuttgart.ma.impact.Impact;
+import de.unistuttgart.ma.impact.Violation;
 
 /**
  * Apparently,  the MongoMapper can not handle the complex sturcture of Notifcation and System 
@@ -41,26 +46,36 @@ public class RepositoryTest extends TestWithRepo {
 	public void impactRepoProxyTest() throws IOException {
 		loadSystem();
 
-		Impact impact = createImpactChain();
+		Notification impact = createImpactChain();
+		
+		Impact impact1 = impact.getTopLevelImpact();
+		Impact impact2 = impact1.getCause();
+		Impact impact3 = impact2.getCause();
+		Impact impact4 = impact3.getCause();
 
-		// save
-		notificationRepoProxy.save(impact, systemId);		
-		assertEquals(1, notificationRepo.count());		
+		ImpactItem ii1 = impactRepo.save(new ImpactItem(impact1));
+		ImpactItem ii2 = impactRepo.save(new ImpactItem(impact2));
+		ImpactItem ii3 = impactRepo.save(new ImpactItem(impact3));
+		ImpactItem ii4 = impactRepo.save(new ImpactItem(impact4));
 		
-		// load
-		Set<Impact> impacts = notificationRepoProxy.findBySystemId(systemId);
 		
-		// asserts
-		assertNotNull(impacts);
-		assertEquals(1, impacts.size());
+		// assert
+		assertEquals(4, impactRepo.count());
 		
-		Impact actual = impacts.iterator().next();
+		assertTrue(impactRepo.findById(ii1.getId()).isPresent());
+		assertTrue(impactRepo.findById(ii2.getId()).isPresent());
+		assertTrue(impactRepo.findById(ii3.getId()).isPresent());
+		assertTrue(impactRepo.findById(ii4.getId()).isPresent());
+		ImpactItem actual1 = impactRepo.findById(ii1.getId()).get();
+		ImpactItem actual2 = impactRepo.findById(ii2.getId()).get();
+		ImpactItem actual3 = impactRepo.findById(ii3.getId()).get();
+		ImpactItem actual4 = impactRepo.findById(ii4.getId()).get();
 		
-		assertNotNull(actual);
-		assertEquals(impact.getLocationId(), actual.getLocationId());
-		assertEquals(impact.getLocation(), actual.getLocation());
-		assertTrue(actual.getCause()instanceof Violation);
-		assertEquals(((Violation) impact.getCause()).getViolatedRule(), ((Violation) actual.getCause()).getViolatedRule());
+		assertEquals(null, actual4.getCause());
+		assertEquals(impact4.getId(), actual3.getCause());
+		assertEquals(impact3.getId(), actual2.getCause());
+		assertEquals(impact2.getId(), actual1.getCause());
+		
 	}
 	
 	@Test
@@ -89,7 +104,7 @@ public class RepositoryTest extends TestWithRepo {
 		// prepare system with resource
 		System emptySystem = SagaFactory.eINSTANCE.createSystem();
 		String filename = "foo.saga";
-		String id = systemRepoProxy.getIdForFilename(filename);
+		emptySystem.setName(filename);
 		
 		Project arch = GropiusFactory.eINSTANCE.createProject();
 		arch.setId("someId");
@@ -97,10 +112,9 @@ public class RepositoryTest extends TestWithRepo {
 		
 		Resource resource = set.createResource(URI.createPlatformResourceURI(filename, false));
 		resource.getContents().add(emptySystem);		
-		emptySystem.setId(id);
 		
 		// execute & assert
-		systemRepoProxy.save(emptySystem);
+		String id = systemRepoProxy.save(emptySystem);
 		
 		assertEquals(1, systemRepo.count());
 		
@@ -110,6 +124,3 @@ public class RepositoryTest extends TestWithRepo {
 		assertEquals(emptySystem.getId(), actual.getId());
 	}
 }
-
-
-

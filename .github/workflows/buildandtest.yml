@@ -1,0 +1,73 @@
+name: build and push docker image
+on: push
+
+jobs:
+  dockerhub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+#    - name: Login to DockerHub
+#      uses: docker/login-action@v1
+#      with:
+#        username: ${{ secrets.DOCKERHUB_USERNAME }}
+#        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    # checkout this repo
+    - name: check out backend
+      uses: actions/checkout@v2
+      with:
+        path: './backend'
+    # collect and install local dependencies
+    - name: check out all in one
+      uses: actions/checkout@v2
+      with:
+        repository: stiesssh/ma-sirius
+        path: './sirius'
+        ref: impact
+
+#    - name: check out gropius graphql api
+#      uses: actions/checkout@master
+#      with:
+#        repository: t2-project/common
+#        path: './common'
+#    - name: check out gropius
+#      uses: actions/checkout@master
+#      with:
+#        repository: t2-project/common
+#        path: './common'
+#    - name: check out gropius slo
+#      uses: actions/checkout@master
+#      with:
+#        repository: t2-project/common
+#        path: './common'
+#    - name: check out saga
+#      uses: actions/checkout@master
+#      with:
+#        repository: t2-project/common
+#        path: './common'
+
+    - name: set up jdk
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '11'
+    - name: build gropius api
+      run: cd sirius/de.unistuttgart.gropius.api && mvn clean install
+    - name: build gropius
+      run: cd sirius/de.unistuttgart.gropius && mvn clean install
+    - name: build gropius slo
+      run: cd sirius/de.unistuttgart.gropius.slo && mvn clean install
+    - name: build saga
+      run: cd sirius/de.unistuttgart.ma.saga && mvn clean install
+    - name: build impact
+      run: cd sirius/de.unistuttgart.ma.impact && mvn clean install
+    - name: verify backend
+      run: cd backend && ./mvnw clean install
+    - run: |
+        echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+#    - name: Build and push
+#      run: |
+#        echo ${{ env.RELEASE_VERSION }}
+#        echo $RELEASE_VERSION
+#        cd cart
+#        docker build -t stiesssh/cart:${{ env.RELEASE_VERSION }} .
+#        docker push stiesssh/cart:${{ env.RELEASE_VERSION }}

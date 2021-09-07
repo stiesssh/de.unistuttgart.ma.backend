@@ -1,0 +1,95 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "notification",
+    "description": "a notification",
+    "type": "object",
+    "properties": {
+    	"impactlocation" : {
+    		"title": "impactlocation",
+    		"description": "location of the top level impact",
+      		"type" : "object",
+            "properties": {
+            	"name" : {
+    				"description": "name of the impacted location",
+      				"type" : "string"
+    			},
+      			"id" : {
+      				"description": "id of the impacted location",
+      				"type" : "string"
+    			}
+    		},
+    		"required": [
+        		"name",
+        		"id"
+    		]
+      	},
+    	"violatedrule" : {
+    		"title": "violatedrule",
+    		"description": "violated slo rule",
+      		"type" : "object",
+            "properties": {
+            	"name" : {
+    				"description": "name of violated slorule",
+      				"type" : "string"
+    			},
+      			"id" : {
+      				"description": "id of the violated slorule",
+      				"type" : "string"
+    			}
+    		},
+    		"required": [
+        		"name",
+        		"id"
+    		]
+      	},
+        "impactpath": {
+            "type": "array",
+            "items": { 
+    			"title": "location",
+    			"description": "location that is part of the impact path",
+            	"type": "object",
+            	"properties": {
+            		"id" : {
+    					"description": "id of the location",
+      					"type" : "string"
+    				},
+    				"name" : {
+    					"description": "name of the location",
+      					"type" : "string"
+    				},
+    				"type" : {
+    					"description": "type of the location",
+      					"type" : "string"
+    				},
+    				"container" : {
+    					"title": "container",
+    					"description": "container of the location",
+            			"type": "object",
+            			"properties": {
+            				"id" : {
+    							"description": "id of the location container",
+      							"type" : "string"
+    						},
+    						"name" : {
+    							"description": "name of the location container",
+      							"type" : "string"
+    						},
+    						"type" : {
+    							"description": "type of the location container",
+      							"type" : "string"
+    						}
+            			},
+    					"required": ["name", "id", "type"]
+    				},
+      				"cause" : {
+      					"description": "id of location that caused this location to be impacted",
+      					"type" : "string"
+    				}
+    			},
+    			"required": ["name", "id", "type", "container"]
+            },
+            "uniqueItems": true
+       }
+    },
+    "required": ["impactlocation", "violatedrule", "impactpath"]
+}

@@ -1,11 +1,11 @@
-package de.unistuttgart.ma.backend.computationUtility;
+package de.unistuttgart.ma.backend.utility;
  
 import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.ecore.EObject;
 
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.ma.saga.SagaStep;
-import de.unistuttgart.ma.saga.impact.Impact;
+import de.unistuttgart.ma.impact.Impact;
 
 /**
  * 
@@ -14,6 +14,8 @@ import de.unistuttgart.ma.saga.impact.Impact;
  * impact chain and thus at each iteration of the calculation the precious
  * impact must be known. and the easiest ways to achiev this seemed to also put
  * it into the queue.
+ * 
+ * TODO : can i make this inner class to creation service?
  * 
  * @author maumau
  *

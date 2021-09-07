@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <saga:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI" xmlns:saga="http://www.example.org/saga" id="60fa9cadc736ff6357a89a9b" name="t2-base.saga">
-  <sagas id="someSaga">
-    <steps id="paymentStep" task="Task_3" componentInterface="//@architecture/@components.6/@interfaces.0"/>
-    <steps id="orderStep" task="Task_3" nextStep="inventoryStep" componentInterface="//@architecture/@components.5/@interfaces.0"/>
-    <steps id="inventoryStep" task="Task_5" nextStep="paymentStep" componentInterface="//@architecture/@components.3/@interfaces.1"/>
+  <sagas id="someSaga" name="someSaga">
+    <steps id="paymentStep" name="paymentStep" task="Task_4" componentInterface="//@architecture/@components.6/@interfaces.0"/>
+    <steps id="orderStep" name="orderStep" task="Task_3" nextStep="inventoryStep" componentInterface="//@architecture/@components.5/@interfaces.0"/>
+    <steps id="inventoryStep" name="inventoryStep" task="Task_5" nextStep="paymentStep" componentInterface="//@architecture/@components.3/@interfaces.1"/>
   </sagas>
   <processes id="Process_1" name="OrderTeaProcess">
     <flowElements xsi:type="bpmn2:StartEvent" id="StartEvent_1" name="Start Event 1" outgoing="SequenceFlow_1"/>
@@ -67,9 +67,9 @@
       <interfaces id="5e94539417ca7005" name="otherCompIface" consumedBy="//@architecture/@components.1 //@architecture/@components.8"/>
     </components>
   </architecture>
-  <sloRules name="payment_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.6" gropiusComponentInterface="//@architecture/@components.6/@interfaces.0"/>
-  <sloRules name="anotherIface_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.8" gropiusComponentInterface="//@architecture/@components.8/@interfaces.0"/>
-  <sloRules name="CI_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
-  <sloRules name="other_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.9" gropiusComponentInterface="//@architecture/@components.9/@interfaces.0"/>
-  <sloRules name="CI_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <sloRules name="payment_avail_slo" id="payment_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.6" gropiusComponentInterface="//@architecture/@components.6/@interfaces.0"/>
+  <sloRules name="anotherIface_respT_slo" id="anotherIface_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.8" gropiusComponentInterface="//@architecture/@components.8/@interfaces.0"/>
+  <sloRules name="CI_respT_slo" id="CI_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
+  <sloRules name="other_respT_slo" id="other_respT_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.9" gropiusComponentInterface="//@architecture/@components.9/@interfaces.0"/>
+  <sloRules name="CI_avail_slo" id="CI_avail_slo" gropiusProject="//@architecture" gropiusComponent="//@architecture/@components.7" gropiusComponentInterface="//@architecture/@components.7/@interfaces.0"/>
 </saga:System>
