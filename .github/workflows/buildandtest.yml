@@ -22,7 +22,7 @@ jobs:
       with:
         repository: stiesssh/ma-sirius
         path: './sirius'
-        ref: impact
+#        ref: impact
 
 #    - name: check out gropius graphql api
 #      uses: actions/checkout@master
