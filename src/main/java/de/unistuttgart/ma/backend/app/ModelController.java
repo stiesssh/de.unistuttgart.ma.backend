@@ -51,9 +51,9 @@ public class ModelController {
 	 * @param xml      the updated version of the model
 	 * @param systemId Id of the model
 	 */
-	@PostMapping("/api/model/{systemId}")
-	public void updateModel(@RequestBody String xml, @PathVariable String systemId) {
-		modelService.updateModel(xml, systemId);
+	@PostMapping("/api/model/{id}")
+	public void updateModel(@RequestBody String xml, @PathVariable String id) {
+		modelService.updateModel(xml, id);
 	}
 
 	/**
@@ -63,9 +63,9 @@ public class ModelController {
 	 * @return xml representation of the newly created model
 	 * @throws ModelCreationFailedException
 	 */
-	@GetMapping("/api/model/{systemId}")
-	public String getModel(@PathVariable String systemId) throws ModelCreationFailedException {
-		return modelService.getModel(systemId);
+	@GetMapping("/api/model/{id}")
+	public String getModel(@PathVariable String id) throws ModelCreationFailedException {
+		return modelService.getModel(id);
 	}
 
 	@GetMapping("/")
