@@ -20,7 +20,7 @@ jobs:
     - name: check out all in one
       uses: actions/checkout@v2
       with:
-        repository: stiesssh/ma-sirius
+        repository: stiesssh/ma-models
         path: './sirius'
 #        ref: impact
 
