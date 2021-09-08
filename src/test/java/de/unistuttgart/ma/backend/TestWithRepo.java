@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 import org.eclipse.bpmn2.FlowElement;
-import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -55,7 +54,7 @@ public abstract class TestWithRepo {
 	@Autowired protected ImpactRepository impactRepo;
 	
 
-	protected de.unistuttgart.ma.saga.System system; 
+	private de.unistuttgart.ma.saga.System system; 
 	protected String systemId = "60fa9cadc736ff6357a89a9b";
 	protected String gropiusId = "5e8cc17ed645a00c";
 	
@@ -74,6 +73,17 @@ public abstract class TestWithRepo {
 		impactRepo.deleteAll();
 	}
 	
+	/**
+	 * 
+	 * @return the system model
+	 * @throws IOException
+	 */
+	public System getSystem() throws IOException  {
+		if (system == null) {
+			loadSystem();
+		}
+		return system;
+	}
 	
 	/**
 	 * load the t2 store
@@ -99,6 +109,31 @@ public abstract class TestWithRepo {
 		system = systemRepoProxy.findById(systemId);
 				
 		assertEquals(size + 1, systemRepo.count());
+	}
+	
+	/**
+	 * load an architecture only. also its a different architecture from the one loaded by {@code loadSystem}
+	 * 
+	 * @throws IOException
+	 */
+	public System getArchOnlySystem() throws IOException  {
+		long size = systemRepo.count();
+		String xml = Files.readString(Paths.get("src/test/resources/", "arch_only.saga"), StandardCharsets.UTF_8);					
+		
+		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+		
+		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
+		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
+		recource.load(inputStream, null);
+
+		for (EObject eObject : recource.getContents()) {
+			if (eObject instanceof System) {
+				systemRepoProxy.save((System) eObject);
+			}
+		}
+				
+		assertEquals(size + 1, systemRepo.count());
+		return systemRepoProxy.findById(systemId);
 	}
 	
 	public Notification createImpactChain() {

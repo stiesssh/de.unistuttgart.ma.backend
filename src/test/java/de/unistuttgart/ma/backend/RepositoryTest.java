@@ -95,7 +95,7 @@ public class RepositoryTest extends TestWithRepo {
 		assertFalse(actual.getSagas().isEmpty());
 		assertFalse(actual.getSloRules().isEmpty());
 		
-		assertEquals(system.getId(), actual.getId());
+		assertEquals(getSystem().getId(), actual.getId());
 	}
 	
 

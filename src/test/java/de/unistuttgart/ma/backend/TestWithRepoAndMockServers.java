@@ -48,6 +48,8 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	protected String solomonEnvironment = "solomonEnvironment";
 
 	protected String issueLocationId = "5e8cf6eaf785a021";
+	
+	protected List<FlatSolomonRule> expectedRules;
 
 	ImportRequest request;
 
@@ -84,6 +86,8 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 		stubFor(get(urlEqualTo("/a")).willReturn(aResponse().withBody("A!")));
 		stubFor(get(urlEqualTo("/b")).willReturn(aResponse().withBody("B!")));
 
+		expectedRules = makeRules();
+		
 		try {
 			mockSolomon();
 			mockGropius();
@@ -160,14 +164,14 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 
 		ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-		stubFor(get(urlEqualTo(requestUri)).willReturn(aResponse().withBody(mapper.writeValueAsString(getRules()))));
+		stubFor(get(urlEqualTo(requestUri)).willReturn(aResponse().withBody(mapper.writeValueAsString(expectedRules))));
 	}
 
 	//
 	// HELPERS
 	//
 
-	public List<FlatSolomonRule> getRules() {
+	public List<FlatSolomonRule> makeRules() {
 		List<FlatSolomonRule> rules = new ArrayList<>();
 
 		rules.add(makeRules("other_respT_slo", "5e945333924a7004", "5e94539417ca7005"));
@@ -181,7 +185,8 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	}
 
 	private FlatSolomonRule makeRules(String name, String componentId, String InterfaceId) {
-		FlatSolomonRule rule = new FlatSolomonRule(name, name, name,"environment", "alert-id", gropiusId, componentId, "preset", "metricOption", "compoarisonOption", "statistisOPtion", 0.5, 10);
+		FlatSolomonRule rule = new FlatSolomonRule(name, name, name, "environment", "alert-id", gropiusId, componentId,
+				"preset", "metricOption", "comparisonOption", "statisticsOption", 0.5, 10);
 		return rule;
 	}
 
@@ -194,10 +199,10 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 	}
 
 	private String getOpenIssue() {
-		return "{\"data\":{\"node\": {\"__typename\": \"Component\",\n"
-				+ "\"id\": \"5ece9e4fd6ac5003\",\n" + "      \"issues\": {\n" + "        \"nodes\": ["
-						+ "{\"id\": \"5ed60349e7385001\", \"body\": \"[//]: # ({\\\"violatedrule\\\":{\\\"name\\\":\\\"CI_respT_slo\\\",\\\"id\\\":\\\"CI_respT_slo\\\",\\\"threshold\\\":0.0,\\\"period\\\":0.0},\\\"impactlocation\\\":{\\\"name\\\":\\\"payment interface\\\",\\\"id\\\":\\\"Task_4\\\"}})\", \"title\": \"Title\" }"
-						+ "]}}}}";
+		return "{\"data\":{\"node\": {\"__typename\": \"Component\",\n" + "\"id\": \"5ece9e4fd6ac5003\",\n"
+				+ "      \"issues\": {\n" + "        \"nodes\": ["
+				+ "{\"id\": \"5ed60349e7385001\", \"body\": \"[//]: # ({\\\"violatedrule\\\":{\\\"name\\\":\\\"CI_respT_slo\\\",\\\"id\\\":\\\"CI_respT_slo\\\",\\\"threshold\\\":0.0,\\\"period\\\":0.0},\\\"impactlocation\\\":{\\\"name\\\":\\\"payment interface\\\",\\\"id\\\":\\\"Task_4\\\"}})\", \"title\": \"Title\" }"
+				+ "]}}}}";
 	}
 
 	private String getNoOpenIssue() {

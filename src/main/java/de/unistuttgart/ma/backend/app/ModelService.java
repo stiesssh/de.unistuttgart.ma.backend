@@ -65,17 +65,23 @@ public class ModelService {
 	 * @throws ModelCreationFailedException if the creation of the model failed
 	 */
 	public String createModel(ImportRequest request) throws ModelCreationFailedException {
-		// collect model elements with importers
-		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
-		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment());
-		Process process = getProcess(request.getBpmn());
-
-		// merge them
+		
 		System system = SagaFactory.eINSTANCE.createSystem();
-		system.setArchitecture(arch);
-		system.getProcesses().add(process);
-		system.getSloRules().addAll(rules);
 		system.setName(request.getRessourceUri());
+		
+		// collect model elements with importers and merge into model.
+		Project arch = getArchitecture(request.getGropiusUrl(), request.getGropiusProjectId());
+		system.setArchitecture(arch);
+		
+		Set<SloRule> rules = getSloRules(request.getSolomonUrl(), request.getSolomonEnvironment(), system);
+		system.getSloRules().addAll(rules);
+
+		Process process = getProcess(request.getBpmn());
+		system.getProcesses().add(process);
+
+		
+		
+		
 
 		// set the resource
 		Resource res = set.createResource(URI.createPlatformResourceURI(request.getRessourceUri(), false));
@@ -101,15 +107,18 @@ public class ModelService {
 	}
 
 	/**
-	 * Get Slo rules from solomon
+	 * Get Slo rules from solomon.
+	 * 
+	 * To get the rules, the architecture must already be known. 
 	 * 
 	 * @param solomonUrl	url of the solomon backend
-	 * @param env	parameter becasue solomon wants it. 
+	 * @param env	parameter that determines wether you get aws or kube rules.  
+	 * @param model	model of the system, must already contain the architecture.
 	 * @return a set of Slo rules
 	 * @throws ModelCreationFailedException if the slo rules could not be retrieved
 	 */
-	protected Set<SloRule> getSloRules(String solomonUrl, String env) throws ModelCreationFailedException {
-		return new SolomonImporter(solomonUrl, env).parse();
+	protected Set<SloRule> getSloRules(String solomonUrl, String env, System model) throws ModelCreationFailedException {
+		return new SolomonImporter(solomonUrl, env, model).parse();
 	}
 
 	/**

@@ -7,13 +7,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.shopify.graphql.support.ID;
-
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.architecture.DataMapper;
 import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
+import de.unistuttgart.gropius.Project;
 import de.unistuttgart.gropius.slo.SloFactory;
 
 /**
@@ -30,7 +29,7 @@ import de.unistuttgart.gropius.slo.SloFactory;
  */
 public class SolomonImporter {
 
-	private final DataMapper gropiusmapper;
+	private final de.unistuttgart.ma.saga.System model;
 	private final SolomonApiQuerier querier;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -44,11 +43,21 @@ public class SolomonImporter {
 	 * 
 	 * @param uri         the uri of the Solomon tool
 	 * @param environment environment to get rules for
+	 * @param model       model of the system, must already contain the
+	 *                    architecture.
 	 */
-	public SolomonImporter(String uri, String environment) {
+	public SolomonImporter(String uri, String environment, de.unistuttgart.ma.saga.System model) {
+		if (model == null) {
+			throw new IllegalArgumentException("System model must not be null");
+		}
+		if (model.getArchitecture() == null) {
+			throw new IllegalArgumentException(String.format(
+					"System model %s is missing an architecture, cannot create a SolomonImporter with such a model",
+					model.getId()));
+		}
 		this.querier = new SolomonApiQuerier(uri);
 		this.environment = environment;
-		this.gropiusmapper = DataMapper.getMapper();
+		this.model = model;
 	}
 
 	/**
@@ -85,15 +94,23 @@ public class SolomonImporter {
 	private Set<SloRule> parse(Set<FlatSolomonRule> flatRules) {
 		Set<SloRule> rules = new HashSet<>();
 		for (FlatSolomonRule flatRule : flatRules) {
+			// rule belongs to architecture of interest?
+			Project project = model.getArchitecture();
+			if (!project.getId().equals(flatRule.getGropiusProjectId())) {
+				logger.debug(String.format("Skip SloRule %s because project does not match", flatRule.getName()));
+				continue;
+			}
+
 			try {
-				Component component = gropiusmapper.getComponentByID(new ID(flatRule.getGropiusComponentId()));
+				Component component = model.getComponentById(flatRule.getGropiusComponentId());
+
 				for (ComponentInterface iface : component.getInterfaces()) {
 
 					SloRule rule = SloFactory.eINSTANCE.createSloRule();
 
 					rule.setGropiusComponentInterface(iface);
 					rule.setGropiusComponent(component);
-					rule.setGropiusProject(gropiusmapper.getProjectByID(new ID(flatRule.getGropiusProjectId())));
+					rule.setGropiusProject(project);
 
 					rule.setId(flatRule.getId());
 					rule.setName(flatRule.getName());
@@ -106,7 +123,7 @@ public class SolomonImporter {
 
 					rules.add(rule);
 
-					logger.info(String.format("Create SloRule %s.", flatRule.getName()));
+					logger.info(String.format("Parsed SloRule %s.", flatRule.getName()));
 				}
 			} catch (NoSuchElementException e) {
 				logger.info(String.format("Skip SloRule %s because of %s.", flatRule.getName(),

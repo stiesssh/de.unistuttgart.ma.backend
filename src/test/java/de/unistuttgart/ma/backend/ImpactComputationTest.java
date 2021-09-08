@@ -12,7 +12,6 @@ import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.ecore.EObject;
 import org.junit.jupiter.api.Test;
-import org.mockito.exceptions.verification.MoreThanAllowedActualInvocations;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,8 +34,8 @@ public class ImpactComputationTest extends TestWithRepo{
 	public void computeNotificationTest() throws IOException {
 		loadSystem();
 		
-		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029"); // ci-face
-		SloRule rule = system.getSloForNode(creditInstituteFace).iterator().next();
+		ComponentInterface creditInstituteFace = getSystem().getComponentInterfaceById("5e8cf780c585a029"); // ci-face
+		SloRule rule = getSystem().getSloForNode(creditInstituteFace).iterator().next();
 
 		
 		Violation violation = ImpactFactory.eINSTANCE.createViolation();

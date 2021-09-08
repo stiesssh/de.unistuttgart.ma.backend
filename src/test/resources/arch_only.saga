@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<saga:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI" xmlns:saga="http://www.example.org/saga" id="60fa9cadc736ff6357a89a9b" name="t2-base.saga">
+  <architecture id="other5e8cc17ed645a00c">
+    <components id="other5e8cf6551a05a013" name="cart">
+      <interfaces id="other5e8cf71a0285a023" name="getCart" consumedBy="//@architecture/@components.1"/>
+    </components>
+    <components id="other5e8cf665a445a015" name="uibackend" consumedInterfaces="//@architecture/@components.0/@interfaces.0 //@architecture/@components.4/@interfaces.0 //@architecture/@components.3/@interfaces.0 //@architecture/@components.9/@interfaces.0">
+      <interfaces id="other5e8cf70605c5a022" name="apiGateway" consumedBy="//@architecture/@components.2"/>
+    </components>
+    <components id="other5e8cf67ea105a017" name="ui" consumedInterfaces="//@architecture/@components.1/@interfaces.0"/>
+    <components id="other5e8cf68f7045a019" name="inventory" consumedInterfaces="//@architecture/@components.8/@interfaces.0">
+      <interfaces id="other5e8cf7541485a027" name="getInventory " consumedBy="//@architecture/@components.1"/>
+      <interfaces id="other5e8cf74541c5a026" name="inventory interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="other5e8cf69a1205a01b" name="orchestrator" consumedInterfaces="//@architecture/@components.5/@interfaces.0 //@architecture/@components.3/@interfaces.1 //@architecture/@components.6/@interfaces.0">
+      <interfaces id="other5e8cf72b87c5a024" name="confirmOrder" consumedBy="//@architecture/@components.1"/>
+    </components>
+    <components id="other5e8cf6bf0245a01d" name="order">
+      <interfaces id="other5e8cf73d3ec5a025" name="order interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="other5e8cf6d4fe05a01f" name="payment" consumedInterfaces="//@architecture/@components.7/@interfaces.0">
+      <interfaces id="other5e8cf760d345a028" name="payment interface" consumedBy="//@architecture/@components.4"/>
+    </components>
+    <components id="other5e8cf6eaf785a021" name="credit institute">
+      <interfaces id="other5e8cf780c585a029" name="credit institute interface" consumedBy="//@architecture/@components.6 //@architecture/@components.9"/>
+    </components>
+    <components id="other5e9453065b4a7002" name="anothercomp" consumedInterfaces="//@architecture/@components.9/@interfaces.0">
+      <interfaces id="other5e94553f2a4a7006" name="anotherIface" consumedBy="//@architecture/@components.3"/>
+    </components>
+    <components id="other5e945333924a7004" name="othercomp" consumedInterfaces="//@architecture/@components.7/@interfaces.0">
+      <interfaces id="other5e94539417ca7005" name="otherCompIface" consumedBy="//@architecture/@components.1 //@architecture/@components.8"/>
+    </components>
+  </architecture>
+</saga:System>
