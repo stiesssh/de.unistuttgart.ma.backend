@@ -17,33 +17,16 @@ jobs:
       with:
         path: './backend'
     # collect and install local dependencies
-    - name: check out all in one
+    - name: check out models
       uses: actions/checkout@v2
       with:
         repository: stiesssh/ma-models
         path: './sirius'
-#        ref: impact
-
-#    - name: check out gropius graphql api
-#      uses: actions/checkout@master
-#      with:
-#        repository: t2-project/common
-#        path: './common'
-#    - name: check out gropius
-#      uses: actions/checkout@master
-#      with:
-#        repository: t2-project/common
-#        path: './common'
-#    - name: check out gropius slo
-#      uses: actions/checkout@master
-#      with:
-#        repository: t2-project/common
-#        path: './common'
-#    - name: check out saga
-#      uses: actions/checkout@master
-#      with:
-#        repository: t2-project/common
-#        path: './common'
+    - name: check out api bindings
+      uses: actions/checkout@v2
+      with:
+        repository: stiesssh/ma-gropius-apibinding
+        path: './api-binding'
 
     - name: set up jdk
       uses: actions/setup-java@v2
@@ -51,7 +34,7 @@ jobs:
         distribution: 'adopt'
         java-version: '11'
     - name: build gropius api
-      run: cd sirius/de.unistuttgart.gropius.api && mvn clean install
+      run: cd api-binding && ./mvnw clean install
     - name: build gropius
       run: cd sirius/de.unistuttgart.gropius && mvn clean install
     - name: build gropius slo
