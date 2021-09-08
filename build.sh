@@ -1,20 +1,28 @@
 #! /bin/bash
 
-git clone https://github.com/stiesssh/ma-sirius.git
 
-cd ma-sirius
+dir=$(pwd)
+echo $dir
 
-# build gropius api
-cd de.unistuttgart.gropius.api && mvn clean install && cd ..
-# build gropius
+# clone models
+git clone https://github.com/stiesssh/ma-models.git
+cd ma-models
+
+# install models
 cd de.unistuttgart.gropius && mvn clean install && cd ..
-# build gropius slo
 cd de.unistuttgart.gropius.slo && mvn clean install && cd ..
-# build saga
 cd de.unistuttgart.ma.saga && mvn clean install && cd ..
-# build impact
 cd de.unistuttgart.ma.impact && mvn clean install && cd ..
-# build backend
-cd .. && ./mvnw clean install
 
-#rm -rf ma-sirius
+cd $dir
+
+# clone api bindings
+git clone https://github.com/stiesssh/ma-gropius-apibinding.git
+cd ma-gropius-apibinding && ./mvnw clean install
+
+
+# build backend
+cd $dir && ./mvnw clean install
+
+rm -r ma-sirius
+rm -r ma-gropius-apibinding

@@ -5,7 +5,7 @@ It is a Spring boot application and supposed to run as a service.
 
 For a deeper understanding, what this is actually about, please read my thesis u_u.
 
-## HTTP API Endpoints 
+## HTTP Endpoints 
 
 * `/` : GET greetings
 * `/api/model/{id}` : GET the model with the given id as XML or POST an newer version (as XML) of the model with the given id to update it.
@@ -50,8 +50,8 @@ spring.data.mongodb.uri | MONGO_HOST | The backend depends on a database. This i
 
 1. Get into the backend repository : 
 ```
-git clone https://github.com/stiesssh/de.unistuttgart.ma.backend.git
-cd de.unistuttgart.ma.backend
+git clone https://github.com/stiesssh/ma-backend.git
+cd ma-backend
 ```
 2. The backend needs the models as local maven dependencies. 
 In the models' repository is a pom.xml to install each model. 
