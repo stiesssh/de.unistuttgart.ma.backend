@@ -24,5 +24,5 @@ cd ma-gropius-apibinding && ./mvnw clean install
 # build backend
 cd $dir && ./mvnw clean install
 
-rm -r ma-sirius
+rm -r ma-models
 rm -r ma-gropius-apibinding

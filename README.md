@@ -8,15 +8,15 @@ For a deeper understanding, what this is actually about, please read my thesis u
 ## HTTP Endpoints 
 
 * `/` : GET greetings
-* `/api/model/{id}` : GET the model with the given id as XML or POST an newer version (as XML) of the model with the given id to update it.
-* `/api/model` : POST an import request to create a new model. Creation in this case means importing models for architecture, process and Slo rules, as specified in the import request, and putting them into the one model. 
+* `/api/model/{id}` : GET the model with the given id as XML or POST a newer version (as XML) of the model to update it.
+* `/api/model` : POST an import request to create a new model. Creation in this case means importing models for architecture, process and Slo rules, as specified in the import request, and putting them into one model. 
 * `/api/alert` : POST alerts here to trigger the computation of impacts (and creation of issues). 
 
 ## Requirements I
 
 The thesis' backend is a Spring Boot application. 
 Thus you need Java. 
-You can make a Docker container and up is alone or along side its database. 
+You can make a Docker container and up it alone or along side its database. 
 In that case you need Docker and for the latter docker compose, too.
 
 Thing           | Version   
@@ -53,12 +53,11 @@ spring.data.mongodb.uri | MONGO_HOST | The backend depends on a database. This i
 git clone https://github.com/stiesssh/ma-backend.git
 cd ma-backend
 ```
-2. The backend needs the models as local maven dependencies. 
-In the models' repository is a pom.xml to install each model. 
+2. The backend needs the models and the java bindings for the Gropius API as local maven dependencies. 
+In the models' repository is a pom.xml to install each model, and in the API binding's repository is one for the API bindings. 
 To install all the models and build a jar for the backend execute the `build.sh`.
 If you cannot to that, just go to each model and do the maven thing manually. 
 ```
-chmod +x build.sh
 ./build.sh
 ```
 
