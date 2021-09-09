@@ -175,7 +175,7 @@ public class SystemRepositoryProxy {
 				e.printStackTrace();
 			}
 		}
-		throw new NoSuchElementException(String.format("Missing System for id %s", id));
+		throw new NoSuchElementException(String.format("Missing Model for Id %s", id));
 	}
 
 	/**
@@ -189,7 +189,7 @@ public class SystemRepositoryProxy {
 			SystemItem item = repository.findById(id).get();
 			return item.getContent();
 		}
-		throw new NoSuchElementException(String.format("Missing System for id %s", id));
+		throw new NoSuchElementException(String.format("Missing Model for Id %s", id));
 	}
 
 	/**
