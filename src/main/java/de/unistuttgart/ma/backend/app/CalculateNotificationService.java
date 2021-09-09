@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,6 @@ import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.ma.backend.repository.ImpactItem;
 import de.unistuttgart.ma.backend.repository.ImpactRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
-import de.unistuttgart.ma.backend.utility.QueueItem;
 import de.unistuttgart.ma.saga.Saga;
 import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.saga.System;
@@ -128,8 +128,6 @@ public class CalculateNotificationService {
 
 		Set<SagaStep> nexts = new HashSet<>();
 
-		// TODO : are these really the same objects, or do the just 'look' the same??
-		// TODO : maybe compare by id or override equals.
 		for (Saga saga : system.getSagas()) {
 			for (SagaStep sagaStep : saga.getSteps()) {
 				if (sagaStep.getComponentInterface().equals(face)) {
@@ -160,30 +158,31 @@ public class CalculateNotificationService {
 		Set<QueueItem> initialItems = new HashSet<>();
 
 		// "finer grain" (interface is set) i
-		// TODO i think is is wrong....
 		if (violation.getViolatedRule().getGropiusComponentInterface() != null) {
-			Set<Component> impactedComponents = new HashSet<>();
-			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
+			initialItems.add(new QueueItem(null, violation.getViolatedRule().getGropiusComponentInterface()));
+//			Set<Component> impactedComponents = new HashSet<>();
+//			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
 
-			Impact initialImpact = makeImpact(null, violation.getViolatedRule().getGropiusComponentInterface());
-
-			for (Component c : impactedComponents) {
-				for (ComponentInterface face : c.getInterfaces()) {
-					initialItems.add(new QueueItem(initialImpact, face));
-				}
-			}
+//			Impact initialImpact = makeImpact(null, violation.getViolatedRule().getGropiusComponentInterface());
+			
+//			for (Component c : impactedComponents) {
+//				for (ComponentInterface face : c.getInterfaces()) {
+//					initialItems.add(new QueueItem(initialImpact, face));
+//				}
+//			}
 
 			// "coarser grain" (interface not set, violation aggregated at component)
 		} else if (violation.getViolatedRule().getGropiusComponent() != null) {
 			EList<ComponentInterface> faces = violation.getViolatedRule().getGropiusComponent().getInterfaces();
 			for (ComponentInterface componentInterface : faces) {
-				Impact initialImpact = makeImpact(null, componentInterface);
+				initialItems.add(new QueueItem(null, componentInterface));
 
-				for (Component c : componentInterface.getConsumedBy()) {
-					for (ComponentInterface face : c.getInterfaces()) {
-						initialItems.add(new QueueItem(initialImpact, face));
-					}
-				}
+//				Impact initialImpact = makeImpact(null, componentInterface);
+//				for (Component c : componentInterface.getConsumedBy()) {
+//					for (ComponentInterface face : c.getInterfaces()) {
+//						initialItems.add(new QueueItem(initialImpact, face));
+//					}
+//				}
 			}
 		} else {
 			throw new IllegalArgumentException("the given violation does not have a location");
@@ -211,4 +210,36 @@ public class CalculateNotificationService {
 
 		return causedImpact;
 	}
+	
+	/**
+	 * The sole reason of existence of this class is, that the impact calculation at
+	 * the CoreService happens in the opposite direction to the linking of the
+	 * impact chain and thus at each iteration of the calculation the precious
+	 * impact must be known. and the easiest ways to achieve this seemed to also put
+	 * it into the queue.
+	 */
+	private class QueueItem {
+		public final Impact cause;
+		public final EObject location;
+		
+		public QueueItem(Impact cause, EObject location) {
+			super();
+			this.cause = cause;
+			this.location = location;
+		}
+		
+		public Impact getCause() {
+			return cause;
+		}
+		public ComponentInterface getLocationAsFace() {
+			return (ComponentInterface) location;
+		}
+		public SagaStep getLocationAsStep() {
+			return (SagaStep) location;
+		}
+		public Task getLocationAsTask() {
+			return (Task) location;
+		}
+	}
+
 }

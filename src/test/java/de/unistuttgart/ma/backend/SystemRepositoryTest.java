@@ -2,7 +2,6 @@ package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,14 +18,17 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
-import de.unistuttgart.ma.backend.rest.ImportRequest;
 import de.unistuttgart.ma.saga.System;
 
+/**
+ * Test
+ * @author maumau
+ *
+ */
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest
 @ActiveProfiles("test")
-class SagaImporterTest extends TestWithRepoAndMockServers {
+class SystemRepositoryTest extends TestWithRepoAndMockServers {
 
 	protected System loadSystem(String file) throws IOException {
 		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);
@@ -47,6 +49,10 @@ class SagaImporterTest extends TestWithRepoAndMockServers {
 		return systemRepoProxy.findById(systemId);
 	}
 
+	/**
+	 * Actually asserts that
+	 * @throws IOException
+	 */
 	@Test
 	void parseEmptySystemTest() throws IOException {
 		String filename = "empty.saga";
@@ -80,48 +86,5 @@ class SagaImporterTest extends TestWithRepoAndMockServers {
 		assertEquals(URI.createPlatformResourceURI(filename, false).toString(), actual.eResource().getURI().toString());
 
 		// TODO : assert the system :x
-	}
-
-	@Test
-	public void creationTest() throws ModelCreationFailedException, IOException {
-		long i = systemRepo.count();
-		importService.createModel(request);
-		assertEquals(i + 1, systemRepo.count());
-	}
-
-	@Test
-	public void creationTest_Fail_wrongGropiusUrl() throws IOException {
-		{
-			ImportRequest request = new ImportRequest(base + solomon, base + "foo", "t2-extended", "solomonEnvironment",
-					"ressourceUri.saga", bpmn);
-			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
-			});
-		}
-		{
-			ImportRequest request = new ImportRequest(base + solomon, "", "t2-extended", "solomonEnvironment",
-					"ressourceUri.saga", bpmn);
-			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
-			});
-		}
-	}
-
-	@Test
-	public void creationTest_Fail_wrongSolomonUrl() throws IOException {
-		{
-			ImportRequest request = new ImportRequest(base + "foo", base + gropius, "t2-extended", "solomonEnvironment",
-					"ressourceUri.saga", bpmn);
-			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
-			});
-		}
-		{
-			ImportRequest request = new ImportRequest("", base + gropius, "t2-extended", "solomonEnvironment",
-					"ressourceUri.saga", bpmn);
-			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
-			});
-		}
 	}
 }

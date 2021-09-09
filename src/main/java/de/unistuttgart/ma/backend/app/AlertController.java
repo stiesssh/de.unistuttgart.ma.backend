@@ -36,7 +36,7 @@ import de.unistuttgart.ma.impact.Violation;
  * each created issue to the issue that the SLA manager (solomon) supposedly
  * created for the initial violation.
  * 
- * TODO : currently, gropius can only attach issues to components of interface.
+ * Currently, gropius can only attach issues to components of interface.
  * however the hereby calculated impact is on the business process. until there
  * is an option to attach an issue to the entire project of gropius, all issues
  * will be attached to the root cause component, even though that is not

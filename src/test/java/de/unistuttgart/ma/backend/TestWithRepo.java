@@ -1,6 +1,7 @@
 package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,115 +40,146 @@ import de.unistuttgart.ma.impact.Violation;
 import de.unistuttgart.ma.saga.SagaStep;
 import de.unistuttgart.ma.saga.System;
 
+/**
+ * Superclass for all Tests that need a repository.
+ * 
+ * Provides helpers to put different system models into that repository or to
+ * create an impact chain. Set up the services to be tested that need the
+ * repository.
+ * 
+ * @author maumau
+ *
+ */
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest
 @ActiveProfiles("test")
 public abstract class TestWithRepo {
-	
+
 	protected CalculateNotificationService computationService;
 	protected ModelService importService;
 	protected ModelController controller;
-	
-	protected SystemRepositoryProxy systemRepoProxy;
-	@Autowired protected SystemRepository systemRepo;
-	
-	@Autowired protected ImpactRepository impactRepo;
-	
 
-	private de.unistuttgart.ma.saga.System system; 
+	protected SystemRepositoryProxy systemRepoProxy;
+	@Autowired
+	protected SystemRepository systemRepo;
+
+	@Autowired
+	protected ImpactRepository impactRepo;
+
+	private de.unistuttgart.ma.saga.System system;
 	protected String systemId = "60fa9cadc736ff6357a89a9b";
 	protected String gropiusId = "5e8cc17ed645a00c";
-	
+
 	ResourceSet set;
 
 	@BeforeEach
 	public void setUp() {
 		set = new ResourceSetImpl();
-		
+
 		systemRepoProxy = new SystemRepositoryProxy(systemRepo, set);
-		
+
 		importService = new ModelService(systemRepoProxy, set);
 		computationService = new CalculateNotificationService(systemRepoProxy, impactRepo);
-		
+
 		systemRepo.deleteAll();
 		impactRepo.deleteAll();
 	}
-	
+
 	/**
 	 * 
 	 * @return the system model
 	 * @throws IOException
 	 */
-	public System getSystem() throws IOException  {
+	public System getSystem() {
 		if (system == null) {
 			loadSystem();
 		}
 		return system;
 	}
-	
+
 	/**
-	 * load the t2 store
+	 * load the t2 store model
+	 */
+	public void loadSystem() {
+		try {
+			long size = systemRepo.count();
+			String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"),
+					StandardCharsets.UTF_8);
+
+			InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+
+			// create new resource, other wise we wont load, but instead just reuse stuff
+			// from the previous parsing.
+			Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
+			recource.load(inputStream, null);
+
+			for (EObject eObject : recource.getContents()) {
+				if (eObject instanceof System) {
+					systemRepoProxy.save((System) eObject);
+				}
+			}
+
+			system = systemRepoProxy.findById(systemId);
+
+			assertEquals(size + 1, systemRepo.count());
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("Could not load system model for tests.");
+		}
+	}
+
+	/**
+	 * load an architecture only. also its a different architecture from the one
+	 * loaded by {@code loadSystem}
 	 * 
 	 * @throws IOException
 	 */
-	public void loadSystem() throws IOException  {
+	public System getArchOnlySystem() {
 		long size = systemRepo.count();
-		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);					
-		
-		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-		
-		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
-		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
-		recource.load(inputStream, null);
+		try {
+			String xml = Files.readString(Paths.get("src/test/resources/", "arch_only.saga"), StandardCharsets.UTF_8);
 
-		for (EObject eObject : recource.getContents()) {
-			if (eObject instanceof System) {
-				systemRepoProxy.save((System) eObject);
+			InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+
+			// create new resource, other wise we wont load, but instead just reuse stuff
+			// from the previous parsing.
+			Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
+			recource.load(inputStream, null);
+
+			for (EObject eObject : recource.getContents()) {
+				if (eObject instanceof System) {
+					systemRepoProxy.save((System) eObject);
+				}
 			}
-		}
 
-		system = systemRepoProxy.findById(systemId);
-				
-		assertEquals(size + 1, systemRepo.count());
+			assertEquals(size + 1, systemRepo.count());
+			return systemRepoProxy.findById(systemId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		fail("Could not load system model \"arch_only.saga\" for tests.");
+		return null;
 	}
-	
+
 	/**
-	 * load an architecture only. also its a different architecture from the one loaded by {@code loadSystem}
+	 * create an impact chain.
 	 * 
-	 * @throws IOException
+	 * @return
 	 */
-	public System getArchOnlySystem() throws IOException  {
-		long size = systemRepo.count();
-		String xml = Files.readString(Paths.get("src/test/resources/", "arch_only.saga"), StandardCharsets.UTF_8);					
-		
-		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-		
-		// create new resource, other wise we wont load, but instead just reuse stuff from the previous parsing. 
-		Resource recource = set.createResource(URI.createPlatformResourceURI("foo.saga", false));
-		recource.load(inputStream, null);
-
-		for (EObject eObject : recource.getContents()) {
-			if (eObject instanceof System) {
-				systemRepoProxy.save((System) eObject);
-			}
-		}
-				
-		assertEquals(size + 1, systemRepo.count());
-		return systemRepoProxy.findById(systemId);
-	}
-	
 	public Notification createImpactChain() {
-		// create 
+		if (system == null) {
+			loadSystem();
+		}
+
 		ComponentInterface creditInstituteFace = system.getComponentInterfaceById("5e8cf780c585a029");
 		ComponentInterface paymentFace = system.getComponentInterfaceById("5e8cf760d345a028");
 		SagaStep step = system.getSagaStepById("paymentStep");
 		FlowElement task = system.getTaskById("Task_4");
 		SloRule rule = system.getSloById("CI_respT_slo");
-	
-		
+
 		Issue issue = GropiusFactory.eINSTANCE.createIssue();
 		issue.setId("slo-vioaltion-issue");
-		
+
 		Impact impact1 = ImpactFactory.eINSTANCE.createImpact();
 		impact1.setLocation(creditInstituteFace);
 		impact1.setId("impact-ci");
@@ -158,11 +190,11 @@ public abstract class TestWithRepo {
 		Impact impact22 = ImpactFactory.eINSTANCE.createImpact();
 		impact22.setLocation(step);
 		impact22.setId("impact-step");
-		
+
 		Impact impact3 = ImpactFactory.eINSTANCE.createImpact();
 		impact3.setLocation(task);
 		impact3.setId("impact-task");
-		
+
 		impact2.setCause(impact1);
 		impact22.setCause(impact2);
 		impact3.setCause(impact22);
@@ -173,11 +205,11 @@ public abstract class TestWithRepo {
 		violation.setPeriod(0.0);
 		violation.setThreshold(0.0);
 		violation.setStartTime(LocalDateTime.now());
-		
+
 		Notification note = ImpactFactory.eINSTANCE.createNotification();
 		note.setTopLevelImpact(impact3);
 		note.setRootCause(violation);
-		
+
 		return note;
 	}
 

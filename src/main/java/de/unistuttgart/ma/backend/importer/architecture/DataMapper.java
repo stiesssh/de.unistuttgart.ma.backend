@@ -10,7 +10,6 @@ import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.GropiusFactory;
 import de.unistuttgart.gropius.Project;
-import de.unistuttgart.ma.backend.exceptions.MappingFailedException;
 
 /**
  * A {@code DataMapper} maps commponents and interface from the graphql schema

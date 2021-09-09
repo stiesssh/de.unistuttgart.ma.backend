@@ -27,7 +27,7 @@ import de.unistuttgart.ma.saga.System;
  * A {@code SystemRepositoryProxy} is a Proxy to the {@link SystemRepository}.
  * 
  * It translates the {@link System}s to {@link SystemItem}s to save them in the
- * repository and vice versa. All acces to the repository should happen through
+ * repository and vice versa. All access to the repository should happen through
  * this proxy.
  * 
  * @author maumau
@@ -47,7 +47,6 @@ public class SystemRepositoryProxy {
 		this.set = set;
 
 		this.projectId2SystemId = new HashMap<>();
-		//this.systemId2ResourceUri = new HashMap<>();
 
 		SagaPackage e = SagaPackage.eINSTANCE;
 
@@ -65,7 +64,6 @@ public class SystemRepositoryProxy {
 			try {
 				System system = deserializeSystem(item.getContent(), item.getFilename());
 				projectId2SystemId.put(system.getArchitecture().getId(), system.getId());
-				//systemId2ResourceUri.put(system.getId(), item.getFilename());
 				logger.info(String.format("load model %s for architecture %s.", system.getId(),
 						system.getArchitecture().getId()));
 			} catch (IOException e) {
@@ -81,9 +79,6 @@ public class SystemRepositoryProxy {
 	 * the entire system
 	 */
 	private final Map<String, String> projectId2SystemId;
-
-	/** TODO : why does this exist?? */
-	//private final Map<String, String> systemId2ResourceUri;
 
 	/**
 	 * Save a system model to the repository.
@@ -105,8 +100,7 @@ public class SystemRepositoryProxy {
 			system.setId(id);
 		}
 		if (!repository.existsById(system.getId())) {
-			SystemItem item = repository.save(new SystemItem(system.getId(), null, system.getName()));
-			//systemId2ResourceUri.put(item.getId(), item.getFilename());
+			repository.save(new SystemItem(system.getId(), null, system.getName()));
 		}
 
 		SystemItem item = repository.findById(system.getId()).get();
@@ -145,7 +139,6 @@ public class SystemRepositoryProxy {
 	 */
 	public String getIdForSystem(System system) throws IOException {
 		SystemItem item = repository.save(new SystemItem(null, null, system.getName()));
-		//systemId2ResourceUri.put(item.getId(), item.getFilename());
 		return item.getId();
 	}
 
@@ -156,7 +149,13 @@ public class SystemRepositoryProxy {
 	 * @return system that import the gropius architecture with the given projectId
 	 */
 	public System findByArchitectureId(String projectId) {
-		return findById(projectId2SystemId.get(projectId));
+		if (projectId2SystemId.isEmpty()) {
+			init();
+		}
+		if (projectId2SystemId.containsKey(projectId)) {
+			return findById(projectId2SystemId.get(projectId));
+		}
+		throw new NoSuchElementException(String.format("Missing Model for Architectrue with Id %s", projectId));
 	}
 
 	/**

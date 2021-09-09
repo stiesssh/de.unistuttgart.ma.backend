@@ -233,9 +233,7 @@ public class CreateIssueService {
 	/**
 	 * Create a body for a gropius issue that contains a json represenation of the
 	 * given notification.
-	 * 
-	 * TODO : (re)add some additional human readable information?
-	 * 
+	 *  
 	 * @param note the notification
 	 * @return body for a gropius issue that contains a json representation of the
 	 *         notification note
