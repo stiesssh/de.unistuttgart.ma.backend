@@ -9,8 +9,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import de.unistuttgart.ma.impact.Impact;
 
 /**
- * 
- * @author maumau
+ * Serialises an {@link Impact} to JSON.
  *
  */
 public class ImpactSerializer extends StdSerializer<Impact> {
@@ -18,27 +17,25 @@ public class ImpactSerializer extends StdSerializer<Impact> {
 	public ImpactSerializer(Class<Impact> t) {
 		super(t);
 	}
-	 
 
 	@Override
 	public void serialize(Impact value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-				 
-        jgen.writeStartObject();
-        jgen.writeStringField("id", value.getLocationId());
-        jgen.writeStringField("name", value.getLocationName());
-        jgen.writeStringField("type", value.getLocationType());
 
-        jgen.writeFieldName("container");
-        jgen.writeStartObject();
-        jgen.writeStringField("id", value.getLocationContainerId());
-        jgen.writeStringField("name", value.getLocationContainerName());
-        jgen.writeStringField("type", value.getLocationContainerType());
-        jgen.writeEndObject();
-        
-        if (value.getCause() != null) {
-        	jgen.writeStringField("cause", value.getCause().getLocationId());
-        }
-        jgen.writeEndObject();
-		
+		jgen.writeStartObject();
+		jgen.writeStringField("id", value.getLocationId());
+		jgen.writeStringField("name", value.getLocationName());
+		jgen.writeStringField("type", value.getLocationType());
+
+		jgen.writeFieldName("container");
+		jgen.writeStartObject();
+		jgen.writeStringField("id", value.getLocationContainerId());
+		jgen.writeStringField("name", value.getLocationContainerName());
+		jgen.writeStringField("type", value.getLocationContainerType());
+		jgen.writeEndObject();
+
+		if (value.getCause() != null) {
+			jgen.writeStringField("cause", value.getCause().getLocationId());
+		}
+		jgen.writeEndObject();
 	}
 }

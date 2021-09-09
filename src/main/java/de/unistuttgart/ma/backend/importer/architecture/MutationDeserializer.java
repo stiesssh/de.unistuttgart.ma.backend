@@ -12,9 +12,6 @@ import de.unistuttgart.gropius.api.Mutation;
 
 /**
  * A {@code MutationDeserializer} deserialises a {@link Mutation}} from JSON.
- * 
- * @author maumau
- *
  */
 public class MutationDeserializer implements JsonDeserializer<Mutation>{
 	@Override

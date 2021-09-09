@@ -8,7 +8,6 @@ import de.unistuttgart.ma.backend.repository.ImpactRepository;
 import de.unistuttgart.ma.backend.repository.SystemRepository;
 
 @Configuration
-//@EnableAutoConfiguration(exclude = {...})
 @EnableMongoRepositories(basePackageClasses = {SystemRepository.class, ImpactRepository.class})
 @Profile("test")
 public class TestContext {

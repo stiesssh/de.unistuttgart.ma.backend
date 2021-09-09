@@ -12,8 +12,6 @@ import de.unistuttgart.ma.impact.Impact;
  * TODO : figure out why the default serialization fails on the generated
  * impacts (p.s. this does not only concern the impacts, but all generated
  * classes).
- * 
- * @author maumau
  *
  */
 public interface ImpactRepository extends MongoRepository<ImpactItem, String> {

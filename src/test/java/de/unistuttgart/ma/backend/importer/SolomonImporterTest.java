@@ -20,12 +20,16 @@ import de.unistuttgart.ma.saga.SagaFactory;
 import de.unistuttgart.ma.saga.System;
 
 /**
- * 
- * @author maumau
- *
+ * Tests for {@link SolomonImporter}
  */
 public class SolomonImporterTest extends TestWithRepoAndMockServers {
 
+	/**
+	 * Correctly parse some rules.
+	 * 
+	 * @throws ModelCreationFailedException
+	 * @throws IOException
+	 */
 	@Test
 	public void test_parseRules() throws ModelCreationFailedException, IOException {
 		SolomonImporter importer = new SolomonImporter(base + solomon, solomonEnvironment, getSystem());
@@ -41,20 +45,23 @@ public class SolomonImporterTest extends TestWithRepoAndMockServers {
 			assertEquals(expected.getComparisonOperator(), actual.getComparisonOperator());
 			assertEquals(expected.getGropiusProjectId(), actual.getGropiusProject().getId().toString());
 			assertEquals(expected.getGropiusComponentId(), actual.getGropiusComponent().getId().toString());
-			//assertEquals(expected.getGropius...Id(), actual.getGropiusComponent().getId().toString());
-			
-		}
-		
-		
+			//assertEquals(expected.getGropius...Id(), actual.getGropiusComponent().getId().toString());	
+		}	
 	}
 	
+	/**
+	 * Must not create Importer without system model. 
+	 */
 	@Test
-	public void test_failNoSystem() throws ModelCreationFailedException, IOException {
+	public void test_failNoSystem() {
 		assertThrows(IllegalArgumentException.class, () -> new SolomonImporter(base + solomon, solomonEnvironment, null));
 	}
 
+	/**
+	 * Must not create Importer if system model has no architecture.
+	 */
 	@Test
-	public void test_failNoArch() throws ModelCreationFailedException, IOException {
+	public void test_failNoArch() {
 		
 		System noArch = SagaFactory.eINSTANCE.createSystem();
 		noArch.setId("noarch");
@@ -63,6 +70,12 @@ public class SolomonImporterTest extends TestWithRepoAndMockServers {
 		assertThrows(IllegalArgumentException.class, () -> new SolomonImporter(base + solomon, solomonEnvironment, noArch));
 	}
 	
+	/**
+	 * Must no parse any rules, if the rules do not belong to the given architecture. 
+	 * 
+	 * @throws ModelCreationFailedException
+	 * @throws IOException
+	 */
 	@Test
 	public void test_NoParse() throws ModelCreationFailedException, IOException {
 		

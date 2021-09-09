@@ -6,21 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
+import de.unistuttgart.ma.backend.app.ModelService;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.rest.ImportRequest;
 
-@ContextConfiguration(classes = TestContext.class)
-@DataMongoTest
-@ActiveProfiles("test")
+/**
+ * Tests for {@linkplain ModelService}.
+ */
 class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 
 	/**
 	 * Successfully create a model.
-	 *  
+	 * 
 	 * @throws ModelCreationFailedException
 	 * @throws IOException
 	 */
@@ -31,8 +29,9 @@ class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 		assertEquals(i + 1, systemRepo.count());
 	}
 
-	/** 
+	/**
 	 * Do not create any model because of invalid gropius url.
+	 * 
 	 * @throws IOException
 	 */
 	@Test
@@ -55,6 +54,7 @@ class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 
 	/**
 	 * Do not create any model because of invalid solomon url.
+	 * 
 	 * @throws IOException
 	 */
 	@Test

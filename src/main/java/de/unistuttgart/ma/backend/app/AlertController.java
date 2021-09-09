@@ -28,7 +28,6 @@ import de.unistuttgart.ma.impact.Notification;
 import de.unistuttgart.ma.impact.Violation;
 
 /**
- * 
  * Controller with an end point to receive alerts from a monitoring tool.
  * 
  * Upon receiving an alert it calculates the impacts of the reported violation,
@@ -43,8 +42,6 @@ import de.unistuttgart.ma.impact.Violation;
  * practicable, as it implies that the user already knows the root cause to look
  * up the issue.
  * 
- * @author maumau
- *
  */
 @RestController
 public class AlertController {

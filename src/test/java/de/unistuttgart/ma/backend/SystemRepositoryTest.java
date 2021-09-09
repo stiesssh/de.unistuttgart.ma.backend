@@ -1,7 +1,9 @@
 package de.unistuttgart.ma.backend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,22 +16,28 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
+import de.unistuttgart.ma.backend.repository.SystemRepository;
+import de.unistuttgart.ma.backend.repository.SystemRepositoryProxy;
 import de.unistuttgart.ma.saga.System;
 
 /**
- * Test
- * @author maumau
+ * Tests for {@link SystemRepository} and {@link SystemRepositoryProxy}.
+ * 
+ * Mostly focuses on whether the correctly (de-)serialise the models.
  *
  */
-@ContextConfiguration(classes = TestContext.class)
-@DataMongoTest
-@ActiveProfiles("test")
-class SystemRepositoryTest extends TestWithRepoAndMockServers {
+class SystemRepositoryTest extends TestWithRepo {
 
+	/**
+	 * Helper, that loads a system with a ressource directly into the db.
+	 * 
+	 * Use this instead of the loadSystem from {@link TestWithRepo}, because this class wants different models, not always the same. 
+	 *  
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
 	protected System loadSystem(String file) throws IOException {
 		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);
 
@@ -45,12 +53,12 @@ class SystemRepositoryTest extends TestWithRepoAndMockServers {
 				systemRepoProxy.save((System) eObject);
 			}
 		}
-
 		return systemRepoProxy.findById(systemId);
 	}
 
 	/**
-	 * Actually asserts that
+	 * Test that (almost) empty model is loaded. 
+	 * 
 	 * @throws IOException
 	 */
 	@Test
@@ -64,10 +72,19 @@ class SystemRepositoryTest extends TestWithRepoAndMockServers {
 
 		assertNotNull(actual);
 		assertNotNull(actual.getArchitecture());
+		assertNotNull(actual.getProcesses());
+		assertTrue(actual.getProcesses().isEmpty());
+		assertNotNull(actual.getSagas());
+		assertTrue(actual.getSagas().isEmpty());
 
 		assertEquals(filename, actual.eResource().getURI().segment(actual.eResource().getURI().segmentCount() - 1));
 	}
 
+	/**
+	 * Test that t2 model is loaded. 
+	 * 
+	 * @throws IOException
+	 */
 	@Test
 	void parseT2BaseSystemTest() throws IOException {
 		loadSystem();
@@ -78,13 +95,16 @@ class SystemRepositoryTest extends TestWithRepoAndMockServers {
 
 		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById("60fa9cadc736ff6357a89a9b");
 
-		assertNotNull(actual);
-		assertNotNull(actual.getArchitecture());
-
 		assertEquals(filename, actual.eResource().getURI().segment(actual.eResource().getURI().segmentCount() - 1));
 		// or:
 		assertEquals(URI.createPlatformResourceURI(filename, false).toString(), actual.eResource().getURI().toString());
 
-		// TODO : assert the system :x
+
+		assertNotNull(actual);
+		assertNotNull(actual.getArchitecture());
+		assertNotNull(actual.getProcesses());
+		assertFalse(actual.getProcesses().isEmpty());
+		assertNotNull(actual.getSagas());
+		assertFalse(actual.getSagas().isEmpty());
 	}
 }

@@ -6,10 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -25,16 +21,13 @@ import de.unistuttgart.ma.saga.SagaFactory;
 import de.unistuttgart.ma.saga.System;
 import de.unistuttgart.ma.backend.repository.ImpactItem;
 import de.unistuttgart.ma.impact.Impact;
-import de.unistuttgart.ma.impact.Violation;
 
 /**
- * Apparently,  the MongoMapper can not handle the complex sturcture of Notifcation and System 
+ * Apparently, the MongoMapper can not handle the complex structure of notification and system. 
  * java.lang.StackOverflowError
  *	at org.springframework.util.ConcurrentReferenceHashMap.getReference(ConcurrentReferenceHashMap.java:264)
  *	[...]
- * making thing transient would most likely fix this, but i dont want to add additional annotattions to the generated files. 
- *
- * @author maumau
+ * making thing transient would most likely fix this, but i dont want to add additional annotations to the generated files. 
  *
  */
 @ContextConfiguration(classes = TestContext.class)

@@ -41,10 +41,6 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
  * repository from {@link TestWithRepo} and also mocks of the solomon and the
  * gropius backends.
  * 
- * 
- * 
- * @author maumau
- *
  */
 public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 

@@ -39,9 +39,6 @@ import de.unistuttgart.ma.saga.SagaStep;
 
 /**
  * Create a Gropius issues for an impact that reached the business process.
- * 
- * @author maumau
- *
  */
 @org.springframework.stereotype.Component
 public class CreateIssueService {

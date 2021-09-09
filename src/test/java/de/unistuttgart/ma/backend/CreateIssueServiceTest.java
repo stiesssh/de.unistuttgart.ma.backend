@@ -24,13 +24,12 @@ import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.impact.Notification;
 
 /**
- * 
- * @author maumau
+ * Tests for {@linkplain CreateIssueService}
  *
  */
 public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
-	
-	String uri; 
+
+	String uri;
 	CreateIssueService service;
 
 	@BeforeEach
@@ -40,70 +39,74 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 		uri = "http://localhost:" + port + gropius;
 		service = new CreateIssueService(uri);
 	}
-	
+
 	/**
+	 * Test Issue creation, when no matching open issue already exists, which means
+	 * that one new issue gets created.
 	 * 
-	 * 
-	 * TODO assert request content ?? 
-	 *  
 	 * @throws IOException
 	 * @throws InterruptedException
-	 * @throws IssueCreationFailedException 
+	 * @throws IssueCreationFailedException
 	 */
 	@Test
-	public void testCreateIssueMutation() throws IssueCreationFailedException, IOException {				
+	public void testCreateIssueMutation() throws IssueCreationFailedException, IOException {
 		loadSystem();
 		mockNoIssueGropius();
 		Notification note = createImpactChain();
 		IssueLocation location = GropiusFactory.eINSTANCE.createComponent();
 		location.setId(issueLocationId);
 		ID actual = service.createIssue(note, location);
-		
+
 		assertEquals("5ecbf9b233d6502f", actual.toString());
-		
+
 		verifyPostIssueGropius(1);
 		verifyGetIssueGropius(1);
 	}
-	
+
 	/**
 	 * 
+	 * Test Issue creation, when matching open issue already exists, which means
+	 * that no new issue gets created.
 	 * 
-	 * TODO assert request content ?? 
-	 *  
 	 * @throws IOException
 	 * @throws InterruptedException
-	 * @throws IssueCreationFailedException 
+	 * @throws IssueCreationFailedException
 	 */
 	@Test
-	public void testOpenCreateIssueMutation() throws IssueCreationFailedException, IOException {				
+	public void testOpenCreateIssueMutation() throws IssueCreationFailedException, IOException {
 		loadSystem();
 		mockOpenIssueGropius();
 		Notification note = createImpactChain();
 		IssueLocation location = GropiusFactory.eINSTANCE.createComponent();
 		location.setId(issueLocationId);
 		ID actual = service.createIssue(note, location);
-		
+
 		assertEquals("5ed60349e7385001", actual.toString());
-		
+
 		verifyPostIssueGropius(0);
 		verifyGetIssueGropius(1);
 	}
-	
+
+	/**
+	 * Test created json representation of impact chain against defined json schema.
+	 * 
+	 * @throws IOException
+	 */
 	@Test
 	public void testCreateJson() throws IOException {
 		loadSystem();
 		Notification note = createImpactChain();
-		
+
 		CreateIssueService service = new CreateIssueService(uri);
 		String actual = service.parseToJson(note);
-	
+
 		System.out.println(actual);
-		
+
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance();
 
-		InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("./json/notification.schema.json");
-		
+		InputStream schemaStream = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream("./json/notification.schema.json");
 
 		JsonNode json = objectMapper.readTree(actual);
 		JsonSchema schema = schemaFactory.getSchema(schemaStream);
@@ -111,20 +114,10 @@ public class CreateIssueServiceTest extends TestWithRepoAndMockServers {
 
 		// fail if validation not good
 		if (!validationResult.isEmpty()) {
-			validationResult.forEach(vm -> System.out.println(vm.getMessage()));
-			fail();
-		}
-	}
-	
-	@Test
-	public void testHumanBody() throws IOException {
-		loadSystem();
-		Notification note = createImpactChain();
-		
-		CreateIssueService service = new CreateIssueService(uri);
-		System.out.println(service.createBody(note));
-		
-		// TODO : assert !?!?
+			validationResult.forEach(vm -> {
+				fail(vm.getMessage());
+			});
 
+		}
 	}
 }

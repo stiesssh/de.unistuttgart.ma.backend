@@ -11,8 +11,6 @@ import de.unistuttgart.ma.impact.Impact;
  * come from the database to ensure that they are unique.
  * 
  * In fact the unique ids are them main reason for persisting the impact at all.
- * 
- * @author maumau
  *
  */
 public class ImpactItem {

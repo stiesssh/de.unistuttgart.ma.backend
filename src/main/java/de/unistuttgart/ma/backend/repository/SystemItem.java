@@ -5,9 +5,7 @@ import org.springframework.data.annotation.Id;
 /**
  * A {@code SystemItem} is an item to be saved in the {@link SystemRepository}.
  * 
- * Content is the actual system, serialised into ecore xml format. 
- * 
- * @author maumau
+ * Content is the actual system, serialised into ecore xml format.
  *
  */
 public class SystemItem {

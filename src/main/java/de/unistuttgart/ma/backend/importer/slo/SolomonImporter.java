@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import de.unistuttgart.gropius.slo.SloRule;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
-import de.unistuttgart.ma.backend.importer.architecture.DataMapper;
 import de.unistuttgart.gropius.Component;
 import de.unistuttgart.gropius.ComponentInterface;
 import de.unistuttgart.gropius.Project;
@@ -19,12 +18,10 @@ import de.unistuttgart.gropius.slo.SloFactory;
  * A {@code SolomonImporter} imports SLO rules from the Solomon tool.
  * 
  * It queries the Solomon tool for the SLO rules and transforms the response
- * into instances of the SLO ecore model. The importer relies on the
- * {@link DataMapper}, that the gropius importer populates. There for the
- * architecture must be imported before the SLO ruless, or else the SLO rules
- * can not be merged properly and will be ignored.
- *
- * @author maumau
+ * into instances of the SLO ecore model. The importer needs an architecture to
+ * attach the slo rules to. Therefore the architecture must be imported before
+ * the SLO rules, or else the SLO rules can not be merged properly and will be
+ * ignored.
  *
  */
 public class SolomonImporter {

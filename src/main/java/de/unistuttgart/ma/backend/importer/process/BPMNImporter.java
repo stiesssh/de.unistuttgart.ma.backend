@@ -18,9 +18,6 @@ import org.slf4j.LoggerFactory;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 /**
  * A {@code BPMNImporter} imports a business process.
- * 
- * @author maumau
- *
  */
 public class BPMNImporter {
 

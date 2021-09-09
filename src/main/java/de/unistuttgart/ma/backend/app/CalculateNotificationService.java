@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,6 @@ import de.unistuttgart.ma.impact.Violation;
 
 /**
  * Responsible for calculating the impacts of a violation.
- * 
- * @author maumau
- *
  */
 @org.springframework.stereotype.Component
 public class CalculateNotificationService {
@@ -123,7 +119,8 @@ public class CalculateNotificationService {
 	protected Set<SagaStep> getNextLevel(ComponentInterface face, System system) {
 		assert (face != null && system != null);
 		if (!system.getComponentInterfaceById(face.getId()).equals(face)) {
-			throw new IllegalArgumentException(String.format("Interface %s does not belong to system %s", face.getId(), system.getId()));
+			throw new IllegalArgumentException(
+					String.format("Interface %s does not belong to system %s", face.getId(), system.getId()));
 		}
 
 		Set<SagaStep> nexts = new HashSet<>();
@@ -164,7 +161,7 @@ public class CalculateNotificationService {
 //			impactedComponents.addAll(violation.getViolatedRule().getGropiusComponentInterface().getConsumedBy());
 
 //			Impact initialImpact = makeImpact(null, violation.getViolatedRule().getGropiusComponentInterface());
-			
+
 //			for (Component c : impactedComponents) {
 //				for (ComponentInterface face : c.getInterfaces()) {
 //					initialItems.add(new QueueItem(initialImpact, face));
@@ -210,7 +207,7 @@ public class CalculateNotificationService {
 
 		return causedImpact;
 	}
-	
+
 	/**
 	 * The sole reason of existence of this class is, that the impact calculation at
 	 * the CoreService happens in the opposite direction to the linking of the
@@ -221,24 +218,23 @@ public class CalculateNotificationService {
 	private class QueueItem {
 		public final Impact cause;
 		public final EObject location;
-		
+
 		public QueueItem(Impact cause, EObject location) {
 			super();
 			this.cause = cause;
 			this.location = location;
 		}
-		
+
 		public Impact getCause() {
 			return cause;
 		}
+
 		public ComponentInterface getLocationAsFace() {
 			return (ComponentInterface) location;
 		}
+
 		public SagaStep getLocationAsStep() {
 			return (SagaStep) location;
-		}
-		public Task getLocationAsTask() {
-			return (Task) location;
 		}
 	}
 

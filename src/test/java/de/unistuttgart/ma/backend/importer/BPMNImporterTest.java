@@ -12,6 +12,9 @@ import de.unistuttgart.ma.backend.TestWithRepoAndMockServers;
 import de.unistuttgart.ma.backend.exceptions.ModelCreationFailedException;
 import de.unistuttgart.ma.backend.importer.process.BPMNImporter;
 
+/**
+ * Tests for {@link BPMNImporter}.
+ */
 public class BPMNImporterTest extends TestWithRepoAndMockServers {
 	@Test
 	public void test() throws ModelCreationFailedException, IOException {

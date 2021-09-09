@@ -15,8 +15,6 @@ import com.google.gson.reflect.TypeToken;
 /**
  * A {@code SolomonApiQuerier} queries the Solomon API at the given
  * {@code apiUri} for Slo rules.
- * 
- * @author maumau
  *
  */
 public class SolomonApiQuerier {

@@ -18,10 +18,6 @@ import de.unistuttgart.gropius.Project;
  * The mapper creates new projects, interface and components where required but
  * does not set all references in between, just in case there are cycles. Make
  * sure to set the missing references yourself.
- * 
- * It is a singleton, because everyone should use the same mapper.
- * 
- * @author maumau
  *
  */
 public class DataMapper {
@@ -32,22 +28,7 @@ public class DataMapper {
 
 	GropiusFactory factory = GropiusFactory.eINSTANCE;
 
-	private static DataMapper instance;
-
-	/**
-	 * Get the {@code DataMapper}.
-	 * 
-	 * @return the mapper instance
-	 */
-	public static DataMapper getMapper() {
-		if (instance != null) {
-			return instance;
-		}
-		instance = new DataMapper();
-		return instance;
-	}
-
-	private DataMapper() {
+	public DataMapper() {
 		componentMap = new HashMap<>();
 		interfaceMap = new HashMap<>();
 		projectMap = new HashMap<>();

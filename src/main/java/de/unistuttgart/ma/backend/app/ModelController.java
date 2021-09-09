@@ -18,9 +18,6 @@ import de.unistuttgart.ma.backend.rest.ImportRequest;
 
 /**
  * Controller with end points to create, get and update the system models.
- * 
- * @author maumau
- *
  */
 @RestController
 public class ModelController {

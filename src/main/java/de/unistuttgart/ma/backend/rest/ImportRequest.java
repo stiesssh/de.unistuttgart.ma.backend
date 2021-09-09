@@ -4,8 +4,6 @@ package de.unistuttgart.ma.backend.rest;
  * A {@code ImportRequest} requests the the creation of a new model. It
  * specifies which architecture, process and slo rules to import into the newly
  * created model.
- * 
- * @author maumau
  *
  */
 public class ImportRequest {

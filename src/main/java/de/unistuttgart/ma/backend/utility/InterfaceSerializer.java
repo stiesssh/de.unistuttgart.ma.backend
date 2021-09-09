@@ -10,7 +10,7 @@ import de.unistuttgart.gropius.ComponentInterface;
 
 /**
  * 
- * @author maumau
+ * Serialises a {@link ComponentInterface} to JSON.
  *
  */
 public class InterfaceSerializer extends StdSerializer<ComponentInterface> {
@@ -18,14 +18,14 @@ public class InterfaceSerializer extends StdSerializer<ComponentInterface> {
 	public InterfaceSerializer(Class<ComponentInterface> t) {
 		super(t);
 	}
-	 
 
 	@Override
-	public void serialize(ComponentInterface value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-				 
-        jgen.writeStartObject();
-        jgen.writeStringField("name", value.getName());
-        jgen.writeStringField("id", value.getId().toString());
-        jgen.writeEndObject();
+	public void serialize(ComponentInterface value, JsonGenerator jgen, SerializerProvider provider)
+			throws IOException {
+
+		jgen.writeStartObject();
+		jgen.writeStringField("name", value.getName());
+		jgen.writeStringField("id", value.getId().toString());
+		jgen.writeEndObject();
 	}
 }

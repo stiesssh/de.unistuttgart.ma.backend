@@ -13,6 +13,9 @@ import de.unistuttgart.ma.backend.exceptions.IssueCreationFailedException;
 import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 import de.unistuttgart.ma.backend.rest.Alert;
 
+/**
+ * Tests for {@link AlertController}.
+ */
 public class AlertControllerTest extends TestWithRepoAndMockServers {
 
 	String uri;

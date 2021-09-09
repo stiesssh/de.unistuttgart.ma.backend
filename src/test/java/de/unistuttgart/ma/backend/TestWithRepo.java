@@ -47,8 +47,6 @@ import de.unistuttgart.ma.saga.System;
  * create an impact chain. Set up the services to be tested that need the
  * repository.
  * 
- * @author maumau
- *
  */
 @ContextConfiguration(classes = TestContext.class)
 @DataMongoTest

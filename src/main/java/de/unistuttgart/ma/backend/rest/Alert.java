@@ -5,9 +5,6 @@ import java.time.LocalDateTime;
 /**
  * An {@code Alert} reports the violation of a SLO rule. Usually it is reported
  * from a monitoring tool, preferably Solomon.
- * 
- * @author maumau
- *
  */
 public class Alert {
 	public Alert() {

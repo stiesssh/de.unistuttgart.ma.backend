@@ -9,23 +9,20 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import de.unistuttgart.ma.impact.Violation;
 
 /**
- * 
- * @author maumau
- *
+ * Serialises a {@link Violation} to JSON.
  */
 public class ViolationSerializer extends StdSerializer<Violation> {
 
 	public ViolationSerializer(Class<Violation> t) {
 		super(t);
 	}
-	 
 
 	@Override
-	public void serialize(Violation value, JsonGenerator jgen, SerializerProvider provider) throws IOException {				 
-        
-		jgen.writeStartObject(); 
-        jgen.writeStringField("timestamp", value.getStartTime().toString());
+	public void serialize(Violation value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+
+		jgen.writeStartObject();
+		jgen.writeStringField("timestamp", value.getStartTime().toString());
 		jgen.writeNumberField("value", value.getThreshold());
-        jgen.writeEndObject();
+		jgen.writeEndObject();
 	}
 }

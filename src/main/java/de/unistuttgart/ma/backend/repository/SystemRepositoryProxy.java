@@ -29,8 +29,6 @@ import de.unistuttgart.ma.saga.System;
  * It translates the {@link System}s to {@link SystemItem}s to save them in the
  * repository and vice versa. All access to the repository should happen through
  * this proxy.
- * 
- * @author maumau
  *
  */
 @Component

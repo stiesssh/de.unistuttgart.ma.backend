@@ -7,8 +7,6 @@ import de.unistuttgart.gropius.slo.SloRule;
  * 
  * It is very flat, as in all references to the architecture are just string IDs. 
  * It must be transformed into a proper {@link SloRule}} to be of use. 
- * 
- * @author maumau
  *
  */
 public class FlatSolomonRule {  

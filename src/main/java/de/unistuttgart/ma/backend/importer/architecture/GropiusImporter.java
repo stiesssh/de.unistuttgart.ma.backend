@@ -16,8 +16,6 @@ import de.unistuttgart.gropius.Project;
  * It queries the Gropius backend for the architecture and transforms the
  * response into an instance of the Gropius ecore model.
  * 
- * @author maumau
- *
  */
 public class GropiusImporter {
 
@@ -44,7 +42,7 @@ public class GropiusImporter {
 		}
 		this.apiQuerier = new GropiusApiQuerier(uri);
 		this.projectName = projectName;
-		this.mapper = DataMapper.getMapper();
+		this.mapper = new DataMapper();
 	}
 
 	/**

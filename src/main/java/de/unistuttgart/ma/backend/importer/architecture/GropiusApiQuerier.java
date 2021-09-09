@@ -26,9 +26,6 @@ import de.unistuttgart.ma.backend.exceptions.IssueLinkageFailedException;
 /**
  * A{@code GropiusApiQuerier} queries the Gropius back end for a {@link Query}
  * or a {@link Mutation}.
- * 
- * @author maumau
- *
  */
 public class GropiusApiQuerier {
 

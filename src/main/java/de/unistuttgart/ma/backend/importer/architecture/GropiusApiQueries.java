@@ -42,8 +42,6 @@ import de.unistuttgart.gropius.api.QueryQuery.ProjectsArgumentsDefinition;
 
 /**
  * This class provides queries for queries mutations.
- * 
- * @author maumau
  *
  */
 public class GropiusApiQueries {
