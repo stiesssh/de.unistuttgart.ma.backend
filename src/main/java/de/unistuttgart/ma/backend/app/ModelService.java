@@ -85,7 +85,7 @@ public class ModelService {
 			String id = systemRepoProxy.save(system);
 			return systemRepoProxy.findXMLById(id);
 		} catch (IOException e) {
-			throw new ModelCreationFailedException("Could not save model to databas", e);
+			throw new ModelCreationFailedException("Could not save model to database", e);
 		}
 	}
 

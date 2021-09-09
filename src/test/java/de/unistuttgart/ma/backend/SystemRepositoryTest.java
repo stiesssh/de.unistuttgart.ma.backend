@@ -3,6 +3,7 @@ package de.unistuttgart.ma.backend;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -11,6 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -38,7 +40,7 @@ class SystemRepositoryTest extends TestWithRepo {
 	 * @return
 	 * @throws IOException
 	 */
-	protected System loadSystem(String file) throws IOException {
+	protected System loadSystem(String file, String id) throws IOException {
 		String xml = Files.readString(Paths.get("src/test/resources/", file), StandardCharsets.UTF_8);
 
 		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
@@ -53,7 +55,7 @@ class SystemRepositoryTest extends TestWithRepo {
 				systemRepoProxy.save((System) eObject);
 			}
 		}
-		return systemRepoProxy.findById(systemId);
+		return systemRepoProxy.findById(id);
 	}
 
 	/**
@@ -64,11 +66,12 @@ class SystemRepositoryTest extends TestWithRepo {
 	@Test
 	void parseEmptySystemTest() throws IOException {
 		String filename = "empty.saga";
+		String id = "empty-test";
 
-		loadSystem(filename);
+		loadSystem(filename, id);
 		assertEquals(1, systemRepo.count());
 
-		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById("60fa9cadc736ff6357a89a9b");
+		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById(id);
 
 		assertNotNull(actual);
 		assertNotNull(actual.getArchitecture());
@@ -89,11 +92,12 @@ class SystemRepositoryTest extends TestWithRepo {
 	void parseT2BaseSystemTest() throws IOException {
 		loadSystem();
 		String filename = "t2-base.saga";
+		String id = "60fa9cadc736ff6357a89a9b";
 
-		loadSystem("t2_base_saga.saga");
+		loadSystem("t2_base_saga.saga", id);
 		assertEquals(1, systemRepo.count());
 
-		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById("60fa9cadc736ff6357a89a9b");
+		de.unistuttgart.ma.saga.System actual = systemRepoProxy.findById(id);
 
 		assertEquals(filename, actual.eResource().getURI().segment(actual.eResource().getURI().segmentCount() - 1));
 		// or:
@@ -106,5 +110,34 @@ class SystemRepositoryTest extends TestWithRepo {
 		assertFalse(actual.getProcesses().isEmpty());
 		assertNotNull(actual.getSagas());
 		assertFalse(actual.getSagas().isEmpty());
+	}
+	
+	@Test
+	void excetptionTest() {
+		assertThrows(NoSuchElementException.class, () -> systemRepoProxy.findById("missing"));
+		assertThrows(NoSuchElementException.class, () -> systemRepoProxy.findXMLById("missing"));
+		assertThrows(NoSuchElementException.class, () -> systemRepoProxy.findByArchitectureId("missing"));
+	}
+	
+	@Test
+	void updateTest() throws IOException {
+		loadSystem();
+		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);
+		systemRepoProxy.updateModel(xml, systemId);
+		
+		assertEquals(xml, systemRepoProxy.findXMLById(systemId));
+	}
+	
+	@Test
+	void updatecreateTest() throws IOException {
+		String xml = Files.readString(Paths.get("src/test/resources/", "t2_base_saga.saga"), StandardCharsets.UTF_8);
+		systemRepoProxy.updateModel(xml, "60fa9cadc736ff6357a89a9b");
+		
+		assertEquals(xml, systemRepoProxy.findXMLById(systemId));
+	}
+	
+	@Test
+	void saveFailTest() throws IOException {
+		assertThrows(IllegalArgumentException.class, () -> systemRepoProxy.save(null));		
 	}
 }

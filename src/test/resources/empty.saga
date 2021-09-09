@@ -5,7 +5,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI" 
 	xmlns:saga="http://www.example.org/saga" 
-	id="60fa9cadc736ff6357a89a9b"
+	id="empty-test"
 	name="empty.saga" >
  <architecture id="5e8cc17ed645a00c"/>
  </saga:System>

@@ -54,7 +54,7 @@ import de.unistuttgart.ma.saga.System;
 public abstract class TestWithRepo {
 
 	protected CalculateNotificationService computationService;
-	protected ModelService importService;
+	protected ModelService modelService;
 	protected ModelController controller;
 
 	protected SystemRepositoryProxy systemRepoProxy;
@@ -76,7 +76,7 @@ public abstract class TestWithRepo {
 
 		systemRepoProxy = new SystemRepositoryProxy(systemRepo, set);
 
-		importService = new ModelService(systemRepoProxy, set);
+		modelService = new ModelService(systemRepoProxy, set);
 		computationService = new CalculateNotificationService(systemRepoProxy, impactRepo);
 
 		systemRepo.deleteAll();

@@ -59,7 +59,7 @@ public abstract class TestWithRepoAndMockServers extends TestWithRepo {
 
 	protected List<FlatSolomonRule> expectedRules;
 
-	ImportRequest request;
+	protected ImportRequest request;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 

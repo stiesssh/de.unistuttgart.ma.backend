@@ -25,7 +25,7 @@ class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 	@Test
 	public void creationTest() throws ModelCreationFailedException, IOException {
 		long i = systemRepo.count();
-		importService.createModel(request);
+		modelService.createModel(request);
 		assertEquals(i + 1, systemRepo.count());
 	}
 
@@ -40,14 +40,14 @@ class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 			ImportRequest request = new ImportRequest(base + solomon, base + "foo", "t2-extended", "solomonEnvironment",
 					"ressourceUri.saga", bpmn);
 			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
+				modelService.createModel(request);
 			});
 		}
 		{
 			ImportRequest request = new ImportRequest(base + solomon, "", "t2-extended", "solomonEnvironment",
 					"ressourceUri.saga", bpmn);
 			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
+				modelService.createModel(request);
 			});
 		}
 	}
@@ -63,14 +63,14 @@ class ModelCreationServiceTest extends TestWithRepoAndMockServers {
 			ImportRequest request = new ImportRequest(base + "foo", base + gropius, "t2-extended", "solomonEnvironment",
 					"ressourceUri.saga", bpmn);
 			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
+				modelService.createModel(request);
 			});
 		}
 		{
 			ImportRequest request = new ImportRequest("", base + gropius, "t2-extended", "solomonEnvironment",
 					"ressourceUri.saga", bpmn);
 			assertThrows(ModelCreationFailedException.class, () -> {
-				importService.createModel(request);
+				modelService.createModel(request);
 			});
 		}
 	}

@@ -63,7 +63,7 @@ public class ModelController {
 	 * @throws ModelCreationFailedException
 	 */
 	@GetMapping("/api/model/{id}")
-	public String getModel(@PathVariable String id) throws ModelCreationFailedException {
+	public String getModel(@PathVariable String id) {
 		return modelService.getModel(id);
 	}
 
