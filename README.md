@@ -4,6 +4,7 @@ This is the backend, that handles all the imports from and communication with ot
 It is a Spring boot application and supposed to run as a service.
 
 Additional Information is provided in the corresponding thesis: http://dx.doi.org/10.18419/opus-12038
+A demonstration is on youtube : https://youtu.be/3E90neB-iUY 
 
 ## HTTP Endpoints 
 
